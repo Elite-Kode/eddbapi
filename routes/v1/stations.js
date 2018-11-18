@@ -17,7 +17,6 @@
 "use strict";
 
 const express = require('express');
-var cors = require('cors');
 const _ = require('lodash');
 const BluePromise = require('bluebird');
 
@@ -127,7 +126,7 @@ let router = express.Router();
    *           items:
    *             $ref: '#/definitions/StationsPage'
    */
-router.get('/', cors(), (req, res, next) => {
+router.get('/', (req, res, next) => {
     require('../../models/stations')
         .then(stations => {
             let query = new Object;

@@ -17,7 +17,6 @@
 "use strict";
 
 const express = require('express');
-var cors = require('cors')
 const _ = require('lodash');
 
 let router = express.Router();
@@ -74,7 +73,7 @@ let router = express.Router();
    *           items:
    *             $ref: '#/definitions/FactionsPage'
    */
-router.get('/', cors(), (req, res, next) => {
+router.get('/', (req, res, next) => {
     require('../../models/factions')
         .then(factions => {
             let query = new Object;

@@ -21,6 +21,7 @@ const swaggerUi = require('swagger-ui-express');
 const path = require('path');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
+var cors = require('cors')
 
 // Bugsnag disabled. Uncomment to enable
 // const bugsnag = require('./bugsnag');
@@ -41,6 +42,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'dist')));
+app.use(cors());
 
 app.use('/api/v1/api-docs.json', (req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
