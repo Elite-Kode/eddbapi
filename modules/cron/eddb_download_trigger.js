@@ -117,7 +117,6 @@ function Trigger() {
             .then(stationsDownloadUpdate)
             .then(populatedSystemsDownloadUpdate)
             .then(systemsDownloadUpdate)
-            .catch(next);
     });
     cronJob.start();
 }
