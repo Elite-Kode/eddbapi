@@ -17,7 +17,6 @@
 "use strict";
 
 const express = require('express');
-const passport = require('passport');
 const _ = require('lodash');
 
 let router = express.Router();
@@ -94,24 +93,24 @@ let router = express.Router();
    *         description: Whether the body is landable
    *         in: query
    *         type: boolean
-   *       - name: idnext
-   *         description: Database id to start the results from.
+   *       - name: page
+   *         description: Page no of response.
    *         in: query
-   *         type: string
+   *         type: integer
    *     responses:
    *       200:
    *         description: An array of bodies in EDDB format
    *         schema:
    *           type: array
    *           items:
-   *             $ref: '#/definitions/Bodies'
-   *     deprecated: true
+   *             $ref: '#/definitions/BodiesPage'
    */
-router.get('/', passport.authenticate('basic', { session: false }), (req, res, next) => {
+router.get('/', (req, res, next) => {
     require('../../models/bodies')
         .then(bodies => {
             let query = new Object;
             let systemSearch = null;
+            let page = 1;
 
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
@@ -178,7 +177,7 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
             }
             if (req.query.bodytypename) {
                 let bodyTypeNames = arrayfy(req.query.bodytypename);
-                query.type = { $in: bodyTypeNames };
+                query.type_name = { $in: bodyTypeNames };
             }
             if (req.query.distancearrival) {
                 query.distance_to_arrival = { $lt: req.query.distancearrival };
@@ -197,15 +196,21 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
             if (req.query.landable) {
                 query.is_landable = boolify(req.query.landable);
             }
-            if (req.query.idnext) {
-                query._id = { $gt: req.query.idnext };
+            if (req.query.page) {
+                page = req.query.page;
             }
 
             let bodySearch = () => {
-                if (_.isEmpty(query) && req.user.clearance !== 0) {
+                if (_.isEmpty(query)) {
                     throw new Error("Add at least 1 query parameter to limit traffic");
                 }
-                bodies.find(query).limit(10).lean()
+                let paginateOptions = {
+                    lean: true,
+                    page: page,
+                    limit: 10,
+                    leanWithId: false
+                };
+                bodies.paginate(query, paginateOptions)
                     .then(result => {
                         res.status(200).json(result);
                     })

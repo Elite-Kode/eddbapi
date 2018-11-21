@@ -16,12 +16,6 @@
 
 "use strict";
 
-const express = require('express');
-const passport = require('passport');
-const _ = require('lodash');
-
-let router = express.Router();
-
 /**
    * @swagger
    * /bodies:
@@ -94,24 +88,31 @@ let router = express.Router();
    *         description: Whether the body is landable
    *         in: query
    *         type: boolean
-   *       - name: idnext
-   *         description: Database id to start the results from.
+   *       - name: page
+   *         description: Page no of response.
    *         in: query
-   *         type: string
+   *         type: integer
    *     responses:
    *       200:
    *         description: An array of bodies in EDDB format
    *         schema:
    *           type: array
    *           items:
-   *             $ref: '#/definitions/Bodies'
+   *             $ref: '#/definitions/BodiesPage'
    *     deprecated: true
    */
+const express = require('express');
+const passport = require('passport');
+const _ = require('lodash');
+
+let router = express.Router();
+
 router.get('/', passport.authenticate('basic', { session: false }), (req, res, next) => {
     require('../../models/bodies')
         .then(bodies => {
             let query = new Object;
             let systemSearch = null;
+            let page = 1;
 
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
@@ -197,15 +198,20 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
             if (req.query.landable) {
                 query.is_landable = boolify(req.query.landable);
             }
-            if (req.query.idnext) {
-                query._id = { $gt: req.query.idnext };
+            if (req.query.page) {
+                page = req.query.page;
             }
 
             let bodySearch = () => {
                 if (_.isEmpty(query) && req.user.clearance !== 0) {
                     throw new Error("Add at least 1 query parameter to limit traffic");
                 }
-                bodies.find(query).limit(10).lean()
+                let paginateOptions = {
+                    lean: true,
+                    page: page,
+                    limit: 10
+                };
+                bodies.paginate(query, paginateOptions)
                     .then(result => {
                         res.status(200).json(result);
                     })

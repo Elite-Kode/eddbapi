@@ -111,17 +111,17 @@ let router = express.Router();
    *         description: Comma seperated states of the powers in influence in the system the station is in.
    *         in: query
    *         type: string
-   *       - name: idnext
-   *         description: Database id to start the results from.
+   *       - name: page
+   *         description: Page no of response.
    *         in: query
-   *         type: string
+   *         type: integer
    *     responses:
    *       200:
    *         description: An array of stations in EDDB format
    *         schema:
    *           type: array
    *           items:
-   *             $ref: '#/definitions/Stations'
+   *             $ref: '#/definitions/StationsPage'
    *     deprecated: true
    */
 router.get('/', passport.authenticate('basic', { session: false }), (req, res, next) => {
@@ -130,6 +130,7 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
             let query = new Object;
             let factionSearch = null;
             let systemSearch = null;
+            let page = 1;
 
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
@@ -232,6 +233,9 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
             if (req.query.economyname) {
                 query['economies.name_lower'] = req.query.economyname.toLowerCase();
             }
+            if (req.query.page) {
+                page = req.query.page;
+            }
             if (req.query.permit || req.query.power || req.query.powerstatename) {
                 systemSearch = new BluePromise((resolve, reject) => {
                     require('../../models/systems')
@@ -273,15 +277,17 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
                         });
                 })
             }
-            if (req.query.idnext) {
-                query._id = { $gt: req.query.idnext };
-            }
 
             let stationSearch = () => {
                 if (_.isEmpty(query) && req.user.clearance !== 0) {
                     throw new Error("Add at least 1 query parameter to limit traffic");
                 }
-                stations.find(query).limit(10).lean()
+                let paginateOptions = {
+                    lean: true,
+                    page: page,
+                    limit: 10
+                };
+                stations.paginate(query, paginateOptions)
                     .then(result => {
                         res.status(200).json(result);
                     })

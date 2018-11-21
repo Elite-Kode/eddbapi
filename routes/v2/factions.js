@@ -62,17 +62,17 @@ let router = express.Router();
    *         description: Name of the home system of the faction.
    *         in: query
    *         type: string
-   *       - name: idnext
-   *         description: Database id to start the results from.
+   *       - name: page
+   *         description: Page no of response.
    *         in: query
-   *         type: string
+   *         type: integer
    *     responses:
    *       200:
    *         description: An array of factions in EDDB format
    *         schema:
    *           type: array
    *           items:
-   *             $ref: '#/definitions/Factions'
+   *             $ref: '#/definitions/FactionsPage'
    *     deprecated: true
    */
 router.get('/', passport.authenticate('basic', { session: false }), (req, res, next) => {
@@ -80,6 +80,7 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
         .then(factions => {
             let query = new Object;
             let systemSearch = null;
+            let page = 1;
 
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
@@ -98,6 +99,9 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
             }
             if (req.query.playerfaction) {
                 query.is_player_faction = boolify(req.query.playerfaction);
+            }
+            if (req.query.page) {
+                page = req.query.page;
             }
             if (req.query.homesystemname || req.query.power) {
                 systemSearch = new Promise((resolve, reject) => {
@@ -132,15 +136,17 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
                         });
                 })
             }
-            if (req.query.idnext) {
-                query._id = { $gt: req.query.idnext };
-            }
 
             let factionSearch = () => {
                 if (_.isEmpty(query) && req.user.clearance !== 0) {
                     throw new Error("Add at least 1 query parameter to limit traffic");
                 }
-                factions.find(query).limit(10).lean()
+                let paginateOptions = {
+                    lean: true,
+                    page: page,
+                    limit: 10
+                };
+                factions.paginate(query, paginateOptions)
                     .then(result => {
                         res.status(200).json(result);
                     })

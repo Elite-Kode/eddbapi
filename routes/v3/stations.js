@@ -17,7 +17,6 @@
 "use strict";
 
 const express = require('express');
-const passport = require('passport');
 const _ = require('lodash');
 const BluePromise = require('bluebird');
 
@@ -111,25 +110,29 @@ let router = express.Router();
    *         description: Comma seperated states of the powers in influence in the system the station is in.
    *         in: query
    *         type: string
-   *       - name: idnext
-   *         description: Database id to start the results from.
+   *       - name: systemname
+   *         description: Name of the system the station is in.
    *         in: query
    *         type: string
+   *       - name: page
+   *         description: Page no of response.
+   *         in: query
+   *         type: integer
    *     responses:
    *       200:
    *         description: An array of stations in EDDB format
    *         schema:
    *           type: array
    *           items:
-   *             $ref: '#/definitions/Stations'
-   *     deprecated: true
+   *             $ref: '#/definitions/StationsPage'
    */
-router.get('/', passport.authenticate('basic', { session: false }), (req, res, next) => {
+router.get('/', (req, res, next) => {
     require('../../models/stations')
         .then(stations => {
             let query = new Object;
             let factionSearch = null;
             let systemSearch = null;
+            let page = 1;
 
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
@@ -232,7 +235,10 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
             if (req.query.economyname) {
                 query['economies.name_lower'] = req.query.economyname.toLowerCase();
             }
-            if (req.query.permit || req.query.power || req.query.powerstatename) {
+            if (req.query.page) {
+                page = req.query.page;
+            }
+            if (req.query.permit || req.query.power || req.query.powerstatename || req.query.systemname) {
                 systemSearch = new BluePromise((resolve, reject) => {
                     require('../../models/systems')
                         .then(systems => {
@@ -248,6 +254,9 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
                             if (req.query.powerstatename) {
                                 let powerStates = arrayfy(req.query.powerstatename);
                                 systemQuery.power_state = { $in: powerStates };
+                            }
+                            if (req.query.systemname) {
+                                systemQuery.name_lower = req.query.systemname.toLowerCase();
                             }
                             let systemProjection = {
                                 _id: 0,
@@ -273,15 +282,18 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
                         });
                 })
             }
-            if (req.query.idnext) {
-                query._id = { $gt: req.query.idnext };
-            }
 
             let stationSearch = () => {
-                if (_.isEmpty(query) && req.user.clearance !== 0) {
+                if (_.isEmpty(query)) {
                     throw new Error("Add at least 1 query parameter to limit traffic");
                 }
-                stations.find(query).limit(10).lean()
+                let paginateOptions = {
+                    lean: true,
+                    page: page,
+                    limit: 10,
+                    leanWithId: false
+                };
+                stations.paginate(query, paginateOptions)
                     .then(result => {
                         res.status(200).json(result);
                     })

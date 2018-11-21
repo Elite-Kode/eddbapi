@@ -1,5 +1,5 @@
 /*
- * KodeBlox Copyright 2017 Sayak Mukhopadhyay
+ * KodeBlox Copyright 2018 Sayak Mukhopadhyay
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 "use strict";
 
 const express = require('express');
+const passport = require('passport');
 const _ = require('lodash');
 
 let router = express.Router();
@@ -80,24 +81,24 @@ let router = express.Router();
    *           - 'controlling'
    *         in: query
    *         type: string
-   *       - name: page
-   *         description: Page no of response.
+   *       - name: idnext
+   *         description: Database id to start the results from.
    *         in: query
-   *         type: integer
+   *         type: string
    *     responses:
    *       200:
    *         description: An array of populated systems in EDDB format
    *         schema:
    *           type: array
    *           items:
-   *             $ref: '#/definitions/PopulatedSystemsPage'
+   *             $ref: '#/definitions/PopulatedSystems'
+   *     deprecated: true
    */
-router.get('/', (req, res, next) => {
+router.get('/', passport.authenticate('basic', { session: false }), (req, res, next) => {
     require('../../models/populated_systems')
         .then(populatedSystems => {
             let query = new Object;
             let factionSearch = null;
-            let page = 1;
 
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
@@ -130,9 +131,6 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.securityname) {
                 query.security = req.query.securityname.toLowerCase();
-            }
-            if (req.query.page) {
-                page = req.query.page;
             }
             if (req.query.factionname) {
                 let presencetype = 'presence';
@@ -172,18 +170,15 @@ router.get('/', (req, res, next) => {
                     })
                 }
             }
+            if (req.query.idnext) {
+                query._id = { $gt: req.query.idnext };
+            }
 
             let systemSearch = () => {
-                if (_.isEmpty(query)) {
+                if (_.isEmpty(query) && req.user.clearance !== 0) {
                     throw new Error("Add at least 1 query parameter to limit traffic");
                 }
-                let paginateOptions = {
-                    lean: true,
-                    page: page,
-                    limit: 10,
-                    leanWithId: false
-                };
-                populatedSystems.paginate(query, paginateOptions)
+                populatedSystems.find(query).limit(10).lean()
                     .then(result => {
                         res.status(200).json(result);
                     })
