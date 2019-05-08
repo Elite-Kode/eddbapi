@@ -17,7 +17,7 @@
 "use strict";
 
 module.exports = new Promise((resolve, reject) => {
-    let db = require('../db');
+    let db = require('../../db');
     let connection = db.eddb_api;
     let mongoose = db.mongoose;
     let Schema = mongoose.Schema;
