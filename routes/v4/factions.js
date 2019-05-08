@@ -72,7 +72,6 @@ let router = express.Router();
    *           type: array
    *           items:
    *             $ref: '#/definitions/FactionsPage'
-   *     deprecated: true
    */
 router.get('/', (req, res, next) => {
     require('../../models/factions')

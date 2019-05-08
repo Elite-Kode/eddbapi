@@ -80,6 +80,7 @@ let router = express.Router();
    *           type: array
    *           items:
    *             $ref: '#/definitions/SystemsPage'
+   *     deprecated: true
    */
 router.get('/', (req, res, next) => {
     require('../../models/systems')

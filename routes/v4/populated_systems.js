@@ -91,7 +91,6 @@ let router = express.Router();
    *           type: array
    *           items:
    *             $ref: '#/definitions/PopulatedSystemsPage'
-   *     deprecated: true
    */
 router.get('/', (req, res, next) => {
     require('../../models/populated_systems')

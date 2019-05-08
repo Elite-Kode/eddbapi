@@ -125,7 +125,6 @@ let router = express.Router();
    *           type: array
    *           items:
    *             $ref: '#/definitions/StationsPage'
-   *     deprecated: true
    */
 router.get('/', (req, res, next) => {
     require('../../models/stations')
