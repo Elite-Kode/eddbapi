@@ -112,7 +112,7 @@ router.get('/', passport.authenticate('basic', { session: false }), (req, res, n
         }
 
         // bodiesDownloadUpdate()
-        commoditiesDownloadUpdate
+        commoditiesDownloadUpdate()
             .then(factionsDownloadUpdate)
             .then(stationsDownloadUpdate)
             .then(populatedSystemsDownloadUpdate)

@@ -112,7 +112,7 @@ function Trigger() {
         }
 
         // bodiesDownloadUpdate()
-        commoditiesDownloadUpdate
+        commoditiesDownloadUpdate()
             .then(factionsDownloadUpdate)
             .then(stationsDownloadUpdate)
             .then(populatedSystemsDownloadUpdate)
