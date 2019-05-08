@@ -45,8 +45,8 @@ let router = express.Router();
    *         description: Name of the government type.
    *         in: query
    *         type: string
-   *       - name: statename
-   *         description: State the system is in.
+   *       - name: statenames
+   *         description: Comma seperated names of states.
    *         in: query
    *         type: string
    *       - name: primaryeconomyname
@@ -111,8 +111,9 @@ router.get('/', (req, res, next) => {
             if (req.query.governmentname) {
                 query.government = req.query.governmentname.toLowerCase();
             }
-            if (req.query.statename) {
-                query.state = req.query.statename.toLowerCase();
+            if(req.query.statenames){
+                let states = arrayfy(req.query.statenames);
+                query['states.name_lower'] = { $in: states };
             }
             if (req.query.primaryeconomyname) {
                 query.primary_economy = req.query.primaryeconomyname.toLowerCase();

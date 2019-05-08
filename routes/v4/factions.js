@@ -45,10 +45,6 @@ let router = express.Router();
    *         description: Name of the government type.
    *         in: query
    *         type: string
-   *       - name: statename
-   *         description: State the faction is in.
-   *         in: query
-   *         type: string
    *       - name: playerfaction
    *         description: Whether the faction is a player faction.
    *         in: query
@@ -91,9 +87,6 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.governmentname) {
                 query.government = req.query.governmentname.toLowerCase();
-            }
-            if (req.query.statename) {
-                query.state = req.query.statename.toLowerCase();
             }
             if (req.query.playerfaction) {
                 query.is_player_faction = boolify(req.query.playerfaction);

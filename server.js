@@ -51,12 +51,19 @@ require('./modules/cron').EDDBDownloadTrigger();
 // const systemsV2 = require('./routes/v2/systems');
 // const downloadUpdateV2 = require('./routes/v2/download_update');
 
-const bodiesV3 = require('./routes/v3/bodies');
-const factionsV3 = require('./routes/v3/factions');
-const populatedSystemsV3 = require('./routes/v3/populated_systems');
-const stationsV3 = require('./routes/v3/stations');
-const systemsV3 = require('./routes/v3/systems');
+// const bodiesV3 = require('./routes/v3/bodies');
+// const factionsV3 = require('./routes/v3/factions');
+// const populatedSystemsV3 = require('./routes/v3/populated_systems');
+// const stationsV3 = require('./routes/v3/stations');
+// const systemsV3 = require('./routes/v3/systems');
 // const downloadUpdateV3 = require('./routes/v3/download_update'); // Internal cronjob being used instead of system cronjob API call
+
+
+const bodiesV4 = require('./routes/v4/bodies');
+const factionsV4 = require('./routes/v4/factions');
+const populatedSystemsV4 = require('./routes/v4/populated_systems');
+const stationsV4 = require('./routes/v4/stations');
+const systemsV4 = require('./routes/v4/systems');
 
 const app = express();
 
@@ -85,6 +92,11 @@ app.use('/api/v3/api-docs.json', (req, res, next) => {
     res.send(swagger.EDDBAPIv3);
 });
 
+app.use('/api/v4/api-docs.json', (req, res, next) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swagger.EDDBAPIv4);
+});
+
 // app.use('/api/v1/bodies', bodiesV1);
 // app.use('/api/v1/commodities', commoditiesV1);
 // app.use('/api/v1/factions', factionsV1);
@@ -104,16 +116,23 @@ app.use('/api/v3/api-docs.json', (req, res, next) => {
 // app.use('/api/v2/systems', systemsV2);
 // app.use('/api/v2/downloadupdate', downloadUpdateV2);
 
-app.use('/api/v3/bodies', bodiesV3);
-app.use('/api/v3/factions', factionsV3);
-app.use('/api/v3/populatedsystems', populatedSystemsV3);
-app.use('/api/v3/stations', stationsV3);
-app.use('/api/v3/systems', systemsV3);
+// app.use('/api/v3/bodies', bodiesV3);
+// app.use('/api/v3/factions', factionsV3);
+// app.use('/api/v3/populatedsystems', populatedSystemsV3);
+// app.use('/api/v3/stations', stationsV3);
+// app.use('/api/v3/systems', systemsV3);
 // app.use('/api/v3/downloadupdate', downloadUpdateV3);
+
+app.use('/api/v4/bodies', bodiesV3);
+app.use('/api/v4/factions', factionsV3);
+app.use('/api/v4/populatedsystems', populatedSystemsV3);
+app.use('/api/v4/stations', stationsV3);
+app.use('/api/v4/systems', systemsV3);
 
 app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv1));
 app.use('/api/v2/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv2));
 app.use('/api/v3/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv3));
+app.use('/api/v4/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv4));
 
 // error handlers
 

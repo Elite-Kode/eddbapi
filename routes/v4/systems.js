@@ -45,10 +45,6 @@ let router = express.Router();
    *         description: Name of the government type.
    *         in: query
    *         type: string
-   *       - name: statename
-   *         description: State the system is in.
-   *         in: query
-   *         type: string
    *       - name: primaryeconomyname
    *         description: The primary economy of the system.
    *         in: query
@@ -98,9 +94,6 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.governmentname) {
                 query.government = req.query.governmentname.toLowerCase();
-            }
-            if (req.query.statename) {
-                query.state = req.query.statename.toLowerCase();
             }
             if (req.query.primaryeconomyname) {
                 query.primary_economy = req.query.primaryeconomyname.toLowerCase();

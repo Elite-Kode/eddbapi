@@ -1,6 +1,6 @@
 {
     "name": "eddbapi",
-    "version": "1.1.1",
+    "version": "1.1.2",
     "license": "Apache-2.0",
     "scripts": {
         "start": "cross-env PORT=4000 pm2 start process.json --env production",

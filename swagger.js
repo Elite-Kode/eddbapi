@@ -134,6 +134,40 @@ let paramsEDDBAPIv3 = {
 
 let swaggerSpecEDDBAPIv3 = makeSwaggerSpec(paramsEDDBAPIv3, false);
 
+
+
+let paramsEDDBAPIv4 = {
+    info: {
+        title: 'EDDB API',
+        version: '4.0.0',
+        description: 'An API for EDDB Data',
+    },
+    basePath: '/api/v4',
+    definitions: {
+        AtmosphereComposition: { properties: swaggerDefinitions.atmosphereComposition },
+        Bodies: { properties: swaggerDefinitions.bodies },
+        Commodities: { properties: swaggerDefinitions.commodities },
+        Factions: { properties: swaggerDefinitions.factions },
+        Materials: { properties: swaggerDefinitions.materials },
+        PopulatedSystemPresence: { properties: swaggerDefinitions.populatedSystemPresence },
+        PopulatedSystems: { properties: swaggerDefinitions.populatedSystems },
+        Rings: { properties: swaggerDefinitions.rings },
+        SolidComposition: { properties: swaggerDefinitions.solidComposition },
+        StationItems: { properties: swaggerDefinitions.stationItems },
+        Stations: { properties: swaggerDefinitions.stations },
+        Systems: { properties: swaggerDefinitions.systems },
+        BodiesPage: { properties: swaggerDefinitions.pagination('Bodies') },
+        FactionsPage: { properties: swaggerDefinitions.pagination('Factions') },
+        PopulatedSystemsPage: { properties: swaggerDefinitions.pagination('PopulatedSystems') },
+        StationsPage: { properties: swaggerDefinitions.pagination('Stations') },
+        SystemsPage: { properties: swaggerDefinitions.pagination('Systems') }
+    },
+    apis: ['./routes/v4/*.js']
+};
+
+let swaggerSpecEDDBAPIv4 = makeSwaggerSpec(paramsEDDBAPIv4, false);
+
 module.exports.EDDBAPIv1 = swaggerSpecEDDBAPIv1;
 module.exports.EDDBAPIv2 = swaggerSpecEDDBAPIv2;
 module.exports.EDDBAPIv3 = swaggerSpecEDDBAPIv3;
+module.exports.EDDBAPIv4 = swaggerSpecEDDBAPIv4;

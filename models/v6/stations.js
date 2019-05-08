@@ -38,7 +38,8 @@ module.exports = new Promise((resolve, reject) => {
         allegiance: { type: String, lowercase: true, index: true },
         states: [{
             id: Number,
-            name: { type: String, lowercase: true }
+            name: String,
+            name_lower: { type: String, lowercase: true }
         }],
         type_id: Number,
         type: { type: String, lowercase: true },

@@ -40,7 +40,8 @@ module.exports = new Promise((resolve, reject) => {
         allegiance: { type: String, lowercase: true, index: true },
         states: [{
             id: Number,
-            name: { type: String, lowercase: true }
+            name: String,
+            name_lower: { type: String, lowercase: true }
         }],
         security_id: Number,
         security: { type: String, lowercase: true, index: true },
@@ -61,15 +62,18 @@ module.exports = new Promise((resolve, reject) => {
             minor_faction_id: Number,
             active_states: [{
                 id: Number,
-                name: { type: String, lowercase: true }
+                name: String,
+                name_lower: { type: String, lowercase: true }
             }],
             pending_states: [{
                 id: Number,
-                name: { type: String, lowercase: true }
+                name: String,
+                name_lower: { type: String, lowercase: true }
             }],
             recovering_states: [{
                 id: Number,
-                name: { type: String, lowercase: true }
+                name: String,
+                name_lower: { type: String, lowercase: true }
             }],
             influence: Number
         }]

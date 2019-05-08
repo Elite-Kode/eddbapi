@@ -50,6 +50,10 @@ let router = express.Router();
    *         description: Name of the controlling minor faction.
    *         in: query
    *         type: integer
+   *       - name: statenames
+   *         description: Comma seperated names of states.
+   *         in: query
+   *         type: string
    *       - name: allegiancename
    *         description: Name of the allegiance.
    *         in: query
@@ -179,6 +183,10 @@ router.get('/', (req, res, next) => {
                             reject(err);
                         });
                 })
+            }
+            if(req.query.statenames){
+                let states = arrayfy(req.query.statenames);
+                query['states.name_lower'] = { $in: states };
             }
             if (req.query.allegiancename) {
                 query.allegiance = req.query.allegiancename.toLowerCase();

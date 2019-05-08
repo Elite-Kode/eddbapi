@@ -16,123 +16,15 @@
 
 "use strict";
 
-const path = require('path');
-const fs = require('fs-extra');
 const populatedSystemsModel = require('../../../models/v6/populated_systems');
 const utilities = require('../../utilities');
 const eventEmmiter = require('events').EventEmitter;
 const inherits = require('util').inherits;
 
-let fileSize = require('../../utilities/file_size');
-
 module.exports = PopulatedSystems;
-
-const pathToFile = path.resolve(__dirname, '../../../dumps/systems_populated.json');
 
 function PopulatedSystems() {
     eventEmmiter.call(this);
-
-    this.update = function () {
-        let recordsUpdated = 0;
-        new utilities.jsonParse(pathToFile)
-            .on('start', () => {
-                console.log(`EDDB populated system dump update reported`);
-                this.emit('started', {
-                    statusCode: 200,
-                    update: "started",
-                    type: 'populated system'
-                });
-            })
-            .on('json', json => {
-                populatedSystemsModel
-                    .then(model => {
-                        model.findOneAndUpdate(
-                            { id: json.id },
-                            json,
-                            {
-                                upsert: true,
-                                runValidators: true
-                            })
-                            .then(() => {
-                                recordsUpdated++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
-            })
-            .on('end', () => {
-                console.log(`${recordsUpdated} records updated`);
-                fs.unlink(pathToFile, () => {
-                    console.log('Populated System Dump deleted');
-                });
-                this.emit('done', recordsUpdated);
-            })
-            .on('error', err => {
-                this.emit('error', err);
-            })
-    };
-
-    this.import = function () {
-        let recordsInserted = 0;
-        new utilities.jsonParse(pathToFile)
-            .on('start', () => {
-                console.log(`EDDB populated system dump insertion reported`);
-                this.emit('started', {
-                    statusCode: 200,
-                    insertion: "started",
-                    type: 'populated system'
-                });
-            })
-            .on('json', json => {
-                populatedSystemsModel
-                    .then(model => {
-                        let document = new model(json);
-                        document.save()
-                            .then(() => {
-                                recordsInserted++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
-            })
-            .on('end', () => {
-                console.log(`${recordsInserted} records inserted`);
-                fs.unlink(pathToFile, () => {
-                    console.log('Populated System Dump deleted');
-                });
-                this.emit('done', recordsInserted);
-            })
-            .on('error', err => {
-                this.emit('error', err);
-            })
-    };
-
-    this.download = function () {
-        new utilities.download('https://eddb.io/archive/v6/systems_populated.json', pathToFile)
-            .on('start', response => {
-                console.log(`EDDB populated system dump reported with status code ${response.statusCode}`);
-                this.emit('started', {
-                    response: response,
-                    insertion: "started",
-                    type: 'populated system'
-                });
-            })
-            .on('end', () => {
-                console.log(`EDDB populated system dump saved successfully with file size ${fileSize.withPath(pathToFile)}`)
-                this.emit('done');
-            })
-            .on('error', err => {
-                this.emit('error', err);
-            })
-    };
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
@@ -146,6 +38,12 @@ function PopulatedSystems() {
                 });
             })
             .on('json', json => {
+                json.states = statify(json.states);
+                json.minor_faction_presences.forEach((minor_faction_presence, index, minor_faction_presences) => {
+                    minor_faction_presences[index].active_states = statify(minor_faction_presence.active_states);
+                    minor_faction_presences[index].pending_states = statify(minor_faction_presence.pending_states);
+                    minor_faction_presences[index].recovering_states = statify(minor_faction_presence.recovering_states);
+                });
                 populatedSystemsModel
                     .then(model => {
                         model.findOneAndUpdate(
@@ -176,6 +74,19 @@ function PopulatedSystems() {
             .on('error', err => {
                 this.emit('error', err);
             })
+    }
+
+    let statify = ref => {
+        let entities = ref;
+        ref = [];
+        entities.forEach((entity, index, allEntities) => {
+            ref.push({
+                id: entity.id,
+                name: entity.name,
+                name_lower: entity.name.toLowerCase()
+            });
+        }, this);
+        return ref;
     }
 }
 

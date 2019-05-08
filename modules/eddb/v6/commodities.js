@@ -16,123 +16,15 @@
 
 "use strict";
 
-const path = require('path');
-const fs = require('fs-extra');
 const commoditiesModel = require('../../../models/v6/commodities');
 const utilities = require('../../utilities');
 const eventEmmiter = require('events').EventEmitter;
 const inherits = require('util').inherits;
 
-let fileSize = require('../../utilities/file_size');
-
 module.exports = Commodities;
-
-const pathToFile = path.resolve(__dirname, '../../../dumps/listings.csv');
 
 function Commodities() {
     eventEmmiter.call(this);
-
-    this.update = function () {
-        let recordsUpdated = 0;
-        new utilities.csvToJson(pathToFile)
-            .on('start', () => {
-                console.log(`EDDB commodity dump update reported`);
-                this.emit('started', {
-                    statusCode: 200,
-                    update: "started",
-                    type: 'commodity'
-                });
-            })
-            .on('json', json => {
-                commoditiesModel
-                    .then(model => {
-                        model.findOneAndUpdate(
-                            { id: json.id },
-                            json,
-                            {
-                                upsert: true,
-                                runValidators: true
-                            })
-                            .then(() => {
-                                recordsUpdated++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
-            })
-            .on('end', () => {
-                console.log(`${recordsUpdated} records updated`);
-                fs.unlink(pathToFile, () => {
-                    console.log('Commodity Dump deleted');
-                });
-                this.emit('done', recordsUpdated);
-            })
-            .on('error', err => {
-                this.emit('error', err);
-            })
-    };
-
-    this.import = function () {
-        let recordsInserted = 0;
-        new utilities.csvToJson(pathToFile)
-            .on('start', () => {
-                console.log(`EDDB commodity dump insertion reported`);
-                this.emit('started', {
-                    statusCode: 200,
-                    insertion: "started",
-                    type: 'commodity'
-                });
-            })
-            .on('json', json => {
-                commoditiesModel
-                    .then(model => {
-                        let document = new model(json);
-                        document.save()
-                            .then(() => {
-                                recordsInserted++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
-            })
-            .on('end', () => {
-                console.log(`${recordsInserted} records inserted`);
-                fs.unlink(pathToFile, () => {
-                    console.log('Commodity Dump deleted');
-                });
-                this.emit('done', recordsInserted);
-            })
-            .on('error', err => {
-                this.emit('error', err);
-            })
-    };
-
-    this.download = function () {
-        new utilities.download('https://eddb.io/archive/v6/listings.csv', pathToFile)
-            .on('start', response => {
-                console.log(`EDDB commodity dump reported with status code ${response.statusCode}`);
-                this.emit('started', {
-                    response: response,
-                    insertion: "started",
-                    type: 'commodity'
-                });
-            })
-            .on('end', () => {
-                console.log(`EDDB commodity dump saved successfully with file size ${fileSize.withPath(pathToFile)}`)
-                this.emit('done');
-            })
-            .on('error', err => {
-                this.emit('error', err);
-            })
-    };
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
