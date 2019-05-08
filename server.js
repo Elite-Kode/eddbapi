@@ -123,11 +123,11 @@ app.use('/api/v4/api-docs.json', (req, res, next) => {
 // app.use('/api/v3/systems', systemsV3);
 // app.use('/api/v3/downloadupdate', downloadUpdateV3);
 
-app.use('/api/v4/bodies', bodiesV3);
-app.use('/api/v4/factions', factionsV3);
-app.use('/api/v4/populatedsystems', populatedSystemsV3);
-app.use('/api/v4/stations', stationsV3);
-app.use('/api/v4/systems', systemsV3);
+app.use('/api/v4/bodies', bodiesV4);
+app.use('/api/v4/factions', factionsV4);
+app.use('/api/v4/populatedsystems', populatedSystemsV4);
+app.use('/api/v4/stations', stationsV4);
+app.use('/api/v4/systems', systemsV4);
 
 app.use('/api/v1/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv1));
 app.use('/api/v2/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv2));
