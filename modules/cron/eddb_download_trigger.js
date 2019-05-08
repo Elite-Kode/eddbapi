@@ -18,7 +18,7 @@
 
 const cron = require('cron');
 const eddbTime = require('../../cronTimes').eddb_trigger_time;
-const eddb = require('../../modules/eddb');
+const eddb = require('../eddb/v6');
 
 module.exports = Trigger;
 
@@ -111,8 +111,8 @@ function Trigger() {
             });
         }
 
-        bodiesDownloadUpdate()
-            .then(commoditiesDownloadUpdate)
+        // bodiesDownloadUpdate()
+        commoditiesDownloadUpdate
             .then(factionsDownloadUpdate)
             .then(stationsDownloadUpdate)
             .then(populatedSystemsDownloadUpdate)
