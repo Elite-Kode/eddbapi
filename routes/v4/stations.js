@@ -49,7 +49,7 @@ let router = express.Router();
    *       - name: controllingfactionname
    *         description: Name of the controlling minor faction.
    *         in: query
-   *         type: integer
+   *         type: string
    *       - name: statenames
    *         description: Comma seperated names of states.
    *         in: query
@@ -154,7 +154,7 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.controllingfactionname) {
                 factionSearch = new BluePromise((resolve, reject) => {
-                    require('../../models/factions')
+                    require('../../models/v6/factions')
                         .then(factions => {
                             let factionQuery = new Object;
 
