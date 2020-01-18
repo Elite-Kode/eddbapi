@@ -23,8 +23,8 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 var cors = require('cors')
 
-// Bugsnag disabled. Uncomment to enable
-// const bugsnag = require('./bugsnag');
+const bugsnagClient = require('./bugsnag');
+const bugsnagClientMiddleware = bugsnagClient.getPlugin('express');
 const swagger = require('./swagger');
 
 require('./modules/cron').EDDBDownloadTrigger();
@@ -67,8 +67,7 @@ const systemsV4 = require('./routes/v4/systems');
 
 const app = express();
 
-// Bugsnag disabled. Uncomment to enable
-// app.use(bugsnag.requestHandler);
+app.use(bugsnagClientMiddleware.requestHandler);
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -135,10 +134,12 @@ app.use('/api/v3/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv3));
 app.use('/api/v4/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv4));
 
 // error handlers
+app.use(bugsnagClientMiddleware.errorHandler);
 
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
+    app.use(logger('dev'));
     app.use(function (err, req, res, next) {
         res.status(err.status || 500);
         res.send({
@@ -152,8 +153,7 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 if (app.get('env') === 'production') {
-    // Bugsnag disabled. Uncomment to enable
-    // app.use(bugsnag.errorHandler);
+    app.use(logger('combined'));
     app.use(function (err, req, res, next) {
         res.status(err.status || 500);
         res.send({

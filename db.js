@@ -19,6 +19,8 @@
 let mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
+const bugsnagClient = require('./bugsnag');
+
 let eddb_api_url = require('./secrets').eddb_api_db_url;
 
 let eddb_api_connection;
@@ -34,6 +36,7 @@ eddb_api_connection.on('connected', () => {
 });
 
 eddb_api_connection.on('error', err => {
+    bugsnagClient.notify(err);
     console.log(`Mongoose error ${err}`);
 });
 
