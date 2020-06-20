@@ -29,6 +29,7 @@ module.exports = new Promise((resolve, reject) => {
         name: String,
         name_lower: { type: String, lowercase: true, index: true },
         system_id: { type: Number, ref: 'system.id' },
+        ed_market_id: { type: String, index: true },
         updated_at: Date,
         max_landing_pad_size: { type: String, lowercase: true, index: true },
         distance_to_star: { type: Number, index: true },

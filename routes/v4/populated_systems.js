@@ -22,76 +22,80 @@ const _ = require('lodash');
 let router = express.Router();
 
 /**
-   * @swagger
-   * /populatedsystems:
-   *   get:
-   *     description: Get the Populated Systems
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: eddbid
-   *         description: EDDB ID.
-   *         in: query
-   *         type: integer
-   *       - name: name
-   *         description: System name.
-   *         in: query
-   *         type: string
-   *       - name: allegiancename
-   *         description: Name of the allegiance.
-   *         in: query
-   *         type: string
-   *       - name: governmentname
-   *         description: Name of the government type.
-   *         in: query
-   *         type: string
-   *       - name: statenames
-   *         description: Comma seperated names of states.
-   *         in: query
-   *         type: string
-   *       - name: primaryeconomyname
-   *         description: The primary economy of the system.
-   *         in: query
-   *         type: string
-   *       - name: power
-   *         description: Comma seperated names of powers in influence in the system.
-   *         in: query
-   *         type: string
-   *       - name: powerstatename
-   *         description: Comma seperated states of the powers in influence in the system.
-   *         in: query
-   *         type: string
-   *       - name: permit
-   *         description: Whether the system is permit locked.
-   *         in: query
-   *         type: boolean
-   *       - name: securityname
-   *         description: The name of the security status in the system.
-   *         in: query
-   *         type: string
-   *       - name: factionname
-   *         description: Name of a faction present in the system.
-   *         in: query
-   *         type: string
-   *       - name: presencetype
-   *         description: Presence type of the faction.
-   *         enum:
-   *           - 'presence'
-   *           - 'controlling'
-   *         in: query
-   *         type: string
-   *       - name: page
-   *         description: Page no of response.
-   *         in: query
-   *         type: integer
-   *     responses:
-   *       200:
-   *         description: An array of populated systems in EDDB format
-   *         schema:
-   *           type: array
-   *           items:
-   *             $ref: '#/definitions/PopulatedSystemsPage'
-   */
+ * @swagger
+ * /populatedsystems:
+ *   get:
+ *     description: Get the Populated Systems
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: eddbid
+ *         description: EDDB ID.
+ *         in: query
+ *         type: integer
+ *       - name: systemaddress
+ *         description: FDev System Address.
+ *         in: query
+ *         type: string
+ *       - name: name
+ *         description: System name.
+ *         in: query
+ *         type: string
+ *       - name: allegiancename
+ *         description: Name of the allegiance.
+ *         in: query
+ *         type: string
+ *       - name: governmentname
+ *         description: Name of the government type.
+ *         in: query
+ *         type: string
+ *       - name: statenames
+ *         description: Comma seperated names of states.
+ *         in: query
+ *         type: string
+ *       - name: primaryeconomyname
+ *         description: The primary economy of the system.
+ *         in: query
+ *         type: string
+ *       - name: power
+ *         description: Comma seperated names of powers in influence in the system.
+ *         in: query
+ *         type: string
+ *       - name: powerstatename
+ *         description: Comma seperated states of the powers in influence in the system.
+ *         in: query
+ *         type: string
+ *       - name: permit
+ *         description: Whether the system is permit locked.
+ *         in: query
+ *         type: boolean
+ *       - name: securityname
+ *         description: The name of the security status in the system.
+ *         in: query
+ *         type: string
+ *       - name: factionname
+ *         description: Name of a faction present in the system.
+ *         in: query
+ *         type: string
+ *       - name: presencetype
+ *         description: Presence type of the faction.
+ *         enum:
+ *           - 'presence'
+ *           - 'controlling'
+ *         in: query
+ *         type: string
+ *       - name: page
+ *         description: Page no of response.
+ *         in: query
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: An array of populated systems in EDDB format
+ *         schema:
+ *           type: array
+ *           items:
+ *             $ref: '#/definitions/PopulatedSystemsPage'
+ */
 router.get('/', (req, res, next) => {
     require('../../models/v6/populated_systems')
         .then(populatedSystems => {
@@ -102,6 +106,9 @@ router.get('/', (req, res, next) => {
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
             }
+            if (req.query.systemaddress) {
+                query.ed_system_address = req.query.systemaddress;
+            }
             if (req.query.name) {
                 query.name_lower = req.query.name.toLowerCase();
             }
@@ -111,7 +118,7 @@ router.get('/', (req, res, next) => {
             if (req.query.governmentname) {
                 query.government = req.query.governmentname.toLowerCase();
             }
-            if(req.query.statenames){
+            if (req.query.statenames) {
                 let states = arrayfy(req.query.statenames);
                 query['states.name_lower'] = { $in: states };
             }

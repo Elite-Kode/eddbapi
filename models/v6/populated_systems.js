@@ -50,6 +50,7 @@ module.exports = new Promise((resolve, reject) => {
         power: { type: String, lowercase: true, index: true },
         power_state: { type: String, lowercase: true, index: true },
         power_state_id: Number,
+        ed_system_address: { type: String, index: true },
         needs_permit: { type: Boolean, index: true },
         updated_at: Date,
         simbad_ref: { type: String, lowercase: true },

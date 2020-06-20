@@ -23,113 +23,117 @@ const BluePromise = require('bluebird');
 let router = express.Router();
 
 /**
-   * @swagger
-   * /stations:
-   *   get:
-   *     description: Get the Stations
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: eddbid
-   *         description: EDDB ID.
-   *         in: query
-   *         type: integer
-   *       - name: name
-   *         description: Station name.
-   *         in: query
-   *         type: string
-   *       - name: ships
-   *         description: Comma seperated names of ships sold.
-   *         in: query
-   *         type: string
-   *       - name: moduleid
-   *         description: Comma seperated ids of modules sold.
-   *         in: query
-   *         type: string
-   *       - name: controllingfactionname
-   *         description: Name of the controlling minor faction.
-   *         in: query
-   *         type: string
-   *       - name: statenames
-   *         description: Comma seperated names of states.
-   *         in: query
-   *         type: string
-   *       - name: allegiancename
-   *         description: Name of the allegiance.
-   *         in: query
-   *         type: string
-   *       - name: governmentname
-   *         description: Name of the government type.
-   *         in: query
-   *         type: string
-   *       - name: minlandingpad
-   *         description: Minimum landing pad size available.
-   *         enum:
-   *           - 'l'
-   *           - 'm'
-   *           - 's'
-   *         in: query
-   *         type: string
-   *       - name: distancestar
-   *         description: Maximum distance from the star.
-   *         in: query
-   *         type: integer
-   *       - name: facilities
-   *         description: Comma seperated names of facilities available in the station.
-   *         enum:
-   *           - 'blackmarket'
-   *           - 'market'
-   *           - 'refuel'
-   *           - 'repair'
-   *           - 'restock'
-   *           - 'outfitting'
-   *           - 'shipyard'
-   *         in: query
-   *         type: boolean
-   *       - name: commodities
-   *         description: Comma seperated names of commodities available.
-   *         in: query
-   *         type: string
-   *       - name: stationtypename
-   *         description: Comma seperated types of station.
-   *         in: query
-   *         type: string
-   *       - name: planetary
-   *         description: Whether the station is planetary.
-   *         in: query
-   *         type: boolean
-   *       - name: economyname
-   *         description: The economy of the station.
-   *         in: query
-   *         type: string
-   *       - name: permit
-   *         description: Whether the system where the station exists is permit locked.
-   *         in: query
-   *         type: boolean
-   *       - name: power
-   *         description: Comma seperated names of powers in influence in the system the station is in.
-   *         in: query
-   *         type: string
-   *       - name: powerstatename
-   *         description: Comma seperated states of the powers in influence in the system the station is in.
-   *         in: query
-   *         type: string
-   *       - name: systemname
-   *         description: Name of the system the station is in.
-   *         in: query
-   *         type: string
-   *       - name: page
-   *         description: Page no of response.
-   *         in: query
-   *         type: integer
-   *     responses:
-   *       200:
-   *         description: An array of stations in EDDB format
-   *         schema:
-   *           type: array
-   *           items:
-   *             $ref: '#/definitions/StationsPage'
-   */
+ * @swagger
+ * /stations:
+ *   get:
+ *     description: Get the Stations
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: eddbid
+ *         description: EDDB ID.
+ *         in: query
+ *         type: integer
+ *       - name: marketid
+ *         description: FDev Station market id.
+ *         in: query
+ *         type: string
+ *       - name: name
+ *         description: Station name.
+ *         in: query
+ *         type: string
+ *       - name: ships
+ *         description: Comma seperated names of ships sold.
+ *         in: query
+ *         type: string
+ *       - name: moduleid
+ *         description: Comma seperated ids of modules sold.
+ *         in: query
+ *         type: string
+ *       - name: controllingfactionname
+ *         description: Name of the controlling minor faction.
+ *         in: query
+ *         type: string
+ *       - name: statenames
+ *         description: Comma seperated names of states.
+ *         in: query
+ *         type: string
+ *       - name: allegiancename
+ *         description: Name of the allegiance.
+ *         in: query
+ *         type: string
+ *       - name: governmentname
+ *         description: Name of the government type.
+ *         in: query
+ *         type: string
+ *       - name: minlandingpad
+ *         description: Minimum landing pad size available.
+ *         enum:
+ *           - 'l'
+ *           - 'm'
+ *           - 's'
+ *         in: query
+ *         type: string
+ *       - name: distancestar
+ *         description: Maximum distance from the star.
+ *         in: query
+ *         type: integer
+ *       - name: facilities
+ *         description: Comma seperated names of facilities available in the station.
+ *         enum:
+ *           - 'blackmarket'
+ *           - 'market'
+ *           - 'refuel'
+ *           - 'repair'
+ *           - 'restock'
+ *           - 'outfitting'
+ *           - 'shipyard'
+ *         in: query
+ *         type: boolean
+ *       - name: commodities
+ *         description: Comma seperated names of commodities available.
+ *         in: query
+ *         type: string
+ *       - name: stationtypename
+ *         description: Comma seperated types of station.
+ *         in: query
+ *         type: string
+ *       - name: planetary
+ *         description: Whether the station is planetary.
+ *         in: query
+ *         type: boolean
+ *       - name: economyname
+ *         description: The economy of the station.
+ *         in: query
+ *         type: string
+ *       - name: permit
+ *         description: Whether the system where the station exists is permit locked.
+ *         in: query
+ *         type: boolean
+ *       - name: power
+ *         description: Comma seperated names of powers in influence in the system the station is in.
+ *         in: query
+ *         type: string
+ *       - name: powerstatename
+ *         description: Comma seperated states of the powers in influence in the system the station is in.
+ *         in: query
+ *         type: string
+ *       - name: systemname
+ *         description: Name of the system the station is in.
+ *         in: query
+ *         type: string
+ *       - name: page
+ *         description: Page no of response.
+ *         in: query
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: An array of stations in EDDB format
+ *         schema:
+ *           type: array
+ *           items:
+ *             $ref: '#/definitions/StationsPage'
+ */
 router.get('/', (req, res, next) => {
     require('../../models/v6/stations')
         .then(stations => {
@@ -140,6 +144,9 @@ router.get('/', (req, res, next) => {
 
             if (req.query.eddbid) {
                 query.id = req.query.eddbid;
+            }
+            if (req.query.marketid) {
+                query.ed_market_id = req.query.marketid;
             }
             if (req.query.name) {
                 query.name_lower = req.query.name.toLowerCase();
@@ -184,7 +191,7 @@ router.get('/', (req, res, next) => {
                         });
                 })
             }
-            if(req.query.statenames){
+            if (req.query.statenames) {
                 let states = arrayfy(req.query.statenames);
                 query['states.name_lower'] = { $in: states };
             }
@@ -196,13 +203,17 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.minlandingpad) {
                 switch (req.query.minlandingpad.toLowerCase()) {
-                    case 'l': query.max_landing_pad_size = 'l';
+                    case 'l':
+                        query.max_landing_pad_size = 'l';
                         break;
-                    case 'm': query.max_landing_pad_size = { $in: ['m', 'l'] };
+                    case 'm':
+                        query.max_landing_pad_size = { $in: ['m', 'l'] };
                         break;
-                    case 's': query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
+                    case 's':
+                        query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
                         break;
-                    default: query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
+                    default:
+                        query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
                 }
             }
             if (req.query.distancestar) {
@@ -212,19 +223,26 @@ router.get('/', (req, res, next) => {
                 let facilities = arrayfy(req.query.facilities);
                 facilities.forEach((facility) => {
                     switch (facility.toLowerCase()) {
-                        case 'blackmarket': query.has_blackmarket = true;
+                        case 'blackmarket':
+                            query.has_blackmarket = true;
                             break;
-                        case 'market': query.has_market = true;
+                        case 'market':
+                            query.has_market = true;
                             break;
-                        case 'refuel': query.has_refuel = true;
+                        case 'refuel':
+                            query.has_refuel = true;
                             break;
-                        case 'repair': query.has_repair = true;
+                        case 'repair':
+                            query.has_repair = true;
                             break;
-                        case 'restock': query.has_rearm = true;
+                        case 'restock':
+                            query.has_rearm = true;
                             break;
-                        case 'outfitting': query.has_outfitting = true;
+                        case 'outfitting':
+                            query.has_outfitting = true;
                             break;
-                        case 'shipyard': query.has_shipyard = true;
+                        case 'shipyard':
+                            query.has_shipyard = true;
                             break;
                     }
                 }, this);
