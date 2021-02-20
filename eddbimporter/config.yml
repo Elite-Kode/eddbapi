@@ -1,0 +1,5 @@
+port: 27017
+host: "localhost"
+user: ""
+password: ""
+
