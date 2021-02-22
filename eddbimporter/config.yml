@@ -1,5 +1,7 @@
+collection: "eddb"
 port: 27017
 host: "localhost"
 user: ""
 password: ""
+https://eddb.io/archive/v6/bodies_recently.jsonl
 
