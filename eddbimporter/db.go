@@ -10,12 +10,16 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+// DbClient singleton representing the database connection
+// Go routines will need to clone this to make their own independant connection to the database
+var DbClient *mongo.Client
+
 // Connect to Mongo DB
-func connectMongo() *mongo.Client {
+func connectMongo() bool {
 
 	fmt.Print("Connecting to MongoDB... ")
 	connStr := "mongodb://" + cfg.User + ":" + cfg.Password + "@" + cfg.Host + ":" + cfg.Port
-	client, err := mongo.NewClient(options.Client().ApplyURI(connStr))
+	DbClient, err := mongo.NewClient(options.Client().ApplyURI(connStr))
 	if err != nil {
 		fmt.Print(" could not create MongoDB client")
 		os.Exit(1)
@@ -24,12 +28,13 @@ func connectMongo() *mongo.Client {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	err = client.Connect(ctx)
+	err = DbClient.Connect(ctx)
 	if err != nil {
 		fmt.Print(" could not connect to database")
 		os.Exit(1)
 	}
 
 	fmt.Println("ok")
-	return client
+
+	return true
 }

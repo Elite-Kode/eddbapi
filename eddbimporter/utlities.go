@@ -8,7 +8,8 @@ import (
 	"time"
 )
 
-func getJSON(url string, target interface{}) error {
+// GetJSON - obtain the JSON from a remote URL
+func GetJSON(url string, target interface{}) error {
 	httpClient := &http.Client{Timeout: 10 * time.Second}
 
 	res, err := httpClient.Get(url)
@@ -21,7 +22,8 @@ func getJSON(url string, target interface{}) error {
 	return json.NewDecoder(res.Body).Decode(target)
 }
 
-func CsvToJson(path string) string {
+// CsvToJSON converts a CSV file stored at path to a JSON string
+func CsvToJSON(path string) string {
 	// function CsvToJson(path) {
 	//     eventEmmiter.call(this);
 	//     let firstData = true;
@@ -45,6 +47,7 @@ func CsvToJson(path string) string {
 	return "[]"
 }
 
+// DownloadUpdate downloads an update from the eddb website
 func DownloadUpdate(pathFrom string, filetype string) {
 	// function DownloadUpdate(pathFrom, type) {
 	//     eventEmmiter.call(this);
@@ -101,6 +104,7 @@ func DownloadUpdate(pathFrom string, filetype string) {
 	// }
 }
 
+// Download - download a full dump from eddb and puts it into a file at pathTo
 func Download(pathFrom string, pathTo string) {
 	// function Download(pathFrom, pathTo) {
 	//     eventEmmiter.call(this);
