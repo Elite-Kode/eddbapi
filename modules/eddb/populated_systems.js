@@ -116,7 +116,7 @@ function PopulatedSystems() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v5/systems_populated.json', pathToFile)
+        new utilities.download('https://eddb.io/archive/v6/systems_populated.json', pathToFile)
             .on('start', response => {
                 console.log(`EDDB populated system dump reported with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -136,7 +136,7 @@ function PopulatedSystems() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v5/systems_populated.json', 'json')
+        new utilities.downloadUpdate('https://eddb.io/archive/v6/systems_populated.json', 'json')
             .on('start', response => {
                 console.log(`EDDB populated system dump started with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -146,6 +146,12 @@ function PopulatedSystems() {
                 });
             })
             .on('json', json => {
+                json.states = statify(json.states);
+                json.minor_faction_presences.forEach((minor_faction_presence, index, minor_faction_presences) => {
+                    minor_faction_presences[index].active_states = statify(minor_faction_presence.active_states);
+                    minor_faction_presences[index].pending_states = statify(minor_faction_presence.pending_states);
+                    minor_faction_presences[index].recovering_states = statify(minor_faction_presence.recovering_states);
+                });
                 populatedSystemsModel
                     .then(model => {
                         model.findOneAndUpdate(
@@ -176,6 +182,19 @@ function PopulatedSystems() {
             .on('error', err => {
                 this.emit('error', err);
             })
+    }
+
+    let statify = ref => {
+        let entities = ref;
+        ref = [];
+        entities.forEach((entity, index, allEntities) => {
+            ref.push({
+                id: entity.id,
+                name: entity.name,
+                name_lower: entity.name.toLowerCase()
+            });
+        }, this);
+        return ref;
     }
 }
 

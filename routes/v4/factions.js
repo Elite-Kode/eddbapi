@@ -70,7 +70,7 @@ let router = express.Router();
    *             $ref: '#/definitions/FactionsPage'
    */
 router.get('/', (req, res, next) => {
-    require('../../models/v6/factions')
+    require('../../models/factions')
         .then(factions => {
             let query = new Object;
             let systemSearch = null;
@@ -96,7 +96,7 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.homesystemname || req.query.power) {
                 systemSearch = new Promise((resolve, reject) => {
-                    require('../../models/v6/systems')
+                    require('../../models/systems')
                         .then(systems => {
                             let systemQuery = new Object;
 

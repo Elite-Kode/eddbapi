@@ -107,7 +107,7 @@ let router = express.Router();
    */
 router.get('/', (req, res, next) => {
     res.status(501).send({});
-    // require('../../models/v6/bodies')
+    // require('../../models/bodies')
     //     .then(bodies => {
     //         let query = new Object;
     //         let systemSearch = null;
@@ -125,7 +125,7 @@ router.get('/', (req, res, next) => {
     //         }
     //         if (req.query.systemname || req.query.reservetypename || req.query.ispopulated || req.query.power) {
     //             systemSearch = new Promise((resolve, reject) => {
-    //                 require('../../models/v6/systems')
+    //                 require('../../models/systems')
     //                     .then(systems => {
     //                         let systemQuery = new Object;
 

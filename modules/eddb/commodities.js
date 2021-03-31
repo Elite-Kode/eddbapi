@@ -116,7 +116,7 @@ function Commodities() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v5/listings.csv', pathToFile)
+        new utilities.download('https://eddb.io/archive/v6/listings.csv', pathToFile)
             .on('start', response => {
                 console.log(`EDDB commodity dump reported with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -136,7 +136,7 @@ function Commodities() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v5/listings.csv', 'csv')
+        new utilities.downloadUpdate('https://eddb.io/archive/v6/listings.csv', 'csv')
             .on('start', response => {
                 console.log(`EDDB commodity dump started with status code ${response.statusCode}`);
                 this.emit('started', {

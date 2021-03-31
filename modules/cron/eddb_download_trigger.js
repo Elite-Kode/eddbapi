@@ -18,7 +18,7 @@
 
 const cron = require('cron');
 const eddbTime = require('../../cronTimes').eddb_trigger_time;
-const eddb = require('../eddb/v6');
+const eddb = require('../eddb');
 
 module.exports = Trigger;
 

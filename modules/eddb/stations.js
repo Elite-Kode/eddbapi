@@ -126,7 +126,7 @@ function Stations() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v5/stations.json', pathToFile)
+        new utilities.download('https://eddb.io/archive/v6/stations.json', pathToFile)
             .on('start', response => {
                 console.log(`EDDB station reported with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -146,7 +146,7 @@ function Stations() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v5/stations.json', 'json')
+        new utilities.downloadUpdate('https://eddb.io/archive/v6/stations.json', 'json')
             .on('start', response => {
                 console.log(`EDDB station dump started with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -156,6 +156,7 @@ function Stations() {
                 });
             })
             .on('json', json => {
+                json.states = statify(json.states);
                 json.import_commodities = objectify(json.import_commodities);
                 json.export_commodities = objectify(json.export_commodities);
                 json.prohibited_commodities = objectify(json.prohibited_commodities);
@@ -200,6 +201,19 @@ function Stations() {
             ref.push({
                 name: entity,
                 name_lower: entity.toLowerCase()
+            });
+        }, this);
+        return ref;
+    }
+
+    let statify = ref => {
+        let entities = ref;
+        ref = [];
+        entities.forEach((entity, index, allEntities) => {
+            ref.push({
+                id: entity.id,
+                name: entity.name,
+                name_lower: entity.name.toLowerCase()
             });
         }, this);
         return ref;

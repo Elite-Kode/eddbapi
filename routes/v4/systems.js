@@ -82,7 +82,7 @@ let router = express.Router();
  *             $ref: '#/definitions/SystemsPage'
  */
 router.get('/', (req, res, next) => {
-    require('../../models/v6/systems')
+    require('../../models/systems')
         .then(systems => {
             let query = new Object;
             let page = 1;
