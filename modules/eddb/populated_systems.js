@@ -43,26 +43,19 @@ function PopulatedSystems() {
                     type: 'populated system'
                 });
             })
-            .on('json', json => {
-                populatedSystemsModel
-                    .then(model => {
-                        model.findOneAndUpdate(
-                            { id: json.id },
-                            json,
-                            {
-                                upsert: true,
-                                runValidators: true
-                            })
-                            .then(() => {
-                                recordsUpdated++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
+            .on('json', async json => {
+                try {
+                    await populatedSystemsModel.findOneAndUpdate(
+                        { id: json.id },
+                        json,
+                        {
+                            upsert: true,
+                            runValidators: true
+                        })
+                    recordsUpdated++;
+                } catch (err) {
+                    this.emit('error', err);
+                }
             })
             .on('end', () => {
                 console.log(`${recordsUpdated} records updated`);
@@ -87,21 +80,14 @@ function PopulatedSystems() {
                     type: 'populated system'
                 });
             })
-            .on('json', json => {
-                populatedSystemsModel
-                    .then(model => {
-                        let document = new model(json);
-                        document.save()
-                            .then(() => {
-                                recordsInserted++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
+            .on('json', async json => {
+                try {
+                    let document = new populatedSystemsModel(json);
+                    await document.save()
+                    recordsInserted++;
+                } catch (err) {
+                    this.emit('error', err);
+                }
             })
             .on('end', () => {
                 console.log(`${recordsInserted} records inserted`);
@@ -145,35 +131,28 @@ function PopulatedSystems() {
                     type: 'populated system'
                 });
             })
-            .on('json', json => {
+            .on('json', async json => {
                 json.states = statify(json.states);
                 json.minor_faction_presences.forEach((minor_faction_presence, index, minor_faction_presences) => {
                     minor_faction_presences[index].active_states = statify(minor_faction_presence.active_states);
                     minor_faction_presences[index].pending_states = statify(minor_faction_presence.pending_states);
                     minor_faction_presences[index].recovering_states = statify(minor_faction_presence.recovering_states);
                 });
-                populatedSystemsModel
-                    .then(model => {
-                        model.findOneAndUpdate(
-                            {
-                                id: json.id,
-                                updated_at: { $ne: json.updated_at }
-                            },
-                            json,
-                            {
-                                upsert: true,
-                                runValidators: true
-                            })
-                            .then(() => {
-                                recordsUpdated++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
+                try {
+                    await populatedSystemsModel.findOneAndUpdate(
+                        {
+                            id: json.id,
+                            updated_at: { $ne: json.updated_at }
+                        },
+                        json,
+                        {
+                            upsert: true,
+                            runValidators: true
+                        });
+                    recordsUpdated++;
+                } catch (err) {
+                    this.emit('error', err);
+                }
             })
             .on('end', () => {
                 console.log(`${recordsUpdated} records updated`);

@@ -43,31 +43,24 @@ function Stations() {
                     type: 'station'
                 });
             })
-            .on('json', json => {
+            .on('json', async json => {
                 json.import_commodities = objectify(json.import_commodities);
                 json.export_commodities = objectify(json.export_commodities);
                 json.prohibited_commodities = objectify(json.prohibited_commodities);
                 json.economies = objectify(json.economies);
                 json.selling_ships = objectify(json.selling_ships);
-                stationsModel
-                    .then(model => {
-                        model.findOneAndUpdate(
-                            { id: json.id },
-                            json,
-                            {
-                                upsert: true,
-                                runValidators: true
-                            })
-                            .then(() => {
-                                recordsUpdated++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
+                try {
+                    await stationsModel.findOneAndUpdate(
+                        { id: json.id },
+                        json,
+                        {
+                            upsert: true,
+                            runValidators: true
+                        })
+                    recordsUpdated++;
+                } catch (err) {
+                    this.emit('error', err);
+                }
             })
             .on('end', () => {
                 console.log(`${recordsUpdated} records updated`);
@@ -92,26 +85,19 @@ function Stations() {
                     type: 'station'
                 });
             })
-            .on('json', json => {
+            .on('json', async json => {
                 json.import_commodities = objectify(json.import_commodities);
                 json.export_commodities = objectify(json.export_commodities);
                 json.prohibited_commodities = objectify(json.prohibited_commodities);
                 json.economies = objectify(json.economies);
                 json.selling_ships = objectify(json.selling_ships);
-                stationsModel
-                    .then(model => {
-                        let document = new model(json);
-                        document.save()
-                            .then(() => {
-                                recordsInserted++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
+                try {
+                    let document = new stationsModel(json);
+                    await document.save()
+                    recordsInserted++;
+                } catch (err) {
+                    this.emit('error', err);
+                }
             })
             .on('end', () => {
                 console.log(`${recordsInserted} records inserted`);
@@ -155,35 +141,28 @@ function Stations() {
                     type: 'station'
                 });
             })
-            .on('json', json => {
+            .on('json', async json => {
                 json.states = statify(json.states);
                 json.import_commodities = objectify(json.import_commodities);
                 json.export_commodities = objectify(json.export_commodities);
                 json.prohibited_commodities = objectify(json.prohibited_commodities);
                 json.economies = objectify(json.economies);
                 json.selling_ships = objectify(json.selling_ships);
-                stationsModel
-                    .then(model => {
-                        model.findOneAndUpdate(
-                            {
-                                id: json.id,
-                                updated_at: { $ne: json.updated_at }
-                            },
-                            json,
-                            {
-                                upsert: true,
-                                runValidators: true
-                            })
-                            .then(() => {
-                                recordsUpdated++;
-                            })
-                            .catch((err) => {
-                                this.emit('error', err);
-                            });
-                    })
-                    .catch(err => {
-                        this.emit('error', err);
-                    });
+                try {
+                    await stationsModel.findOneAndUpdate(
+                        {
+                            id: json.id,
+                            updated_at: { $ne: json.updated_at }
+                        },
+                        json,
+                        {
+                            upsert: true,
+                            runValidators: true
+                        });
+                    recordsUpdated++;
+                } catch (err) {
+                    this.emit('error', err);
+                }
             })
             .on('end', () => {
                 console.log(`${recordsUpdated} records updated`);
