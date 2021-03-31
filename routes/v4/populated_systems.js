@@ -97,7 +97,7 @@ let router = express.Router();
  *             $ref: '#/definitions/PopulatedSystemsPage'
  */
 router.get('/', (req, res, next) => {
-    require('../../models/v6/populated_systems')
+    require('../../models/populated_systems')
         .then(populatedSystems => {
             let query = new Object;
             let factionSearch = null;
@@ -151,7 +151,7 @@ router.get('/', (req, res, next) => {
                     query.controlling_minor_faction = req.query.factionname.toLowerCase();
                 } else if (presencetype === 'presence') {
                     factionSearch = new Promise((resolve, reject) => {
-                        require('../../models/v6/factions')
+                        require('../../models/factions')
                             .then(factions => {
                                 let factionQuery = new Object;
 

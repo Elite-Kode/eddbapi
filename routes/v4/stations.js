@@ -135,7 +135,7 @@ let router = express.Router();
  *             $ref: '#/definitions/StationsPage'
  */
 router.get('/', (req, res, next) => {
-    require('../../models/v6/stations')
+    require('../../models/stations')
         .then(stations => {
             let query = new Object;
             let factionSearch = null;
@@ -161,7 +161,7 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.controllingfactionname) {
                 factionSearch = new BluePromise((resolve, reject) => {
-                    require('../../models/v6/factions')
+                    require('../../models/factions')
                         .then(factions => {
                             let factionQuery = new Object;
 
@@ -266,7 +266,7 @@ router.get('/', (req, res, next) => {
             }
             if (req.query.permit || req.query.power || req.query.powerstatename || req.query.systemname) {
                 systemSearch = new BluePromise((resolve, reject) => {
-                    require('../../models/v6/systems')
+                    require('../../models/systems')
                         .then(systems => {
                             let systemQuery = new Object;
 

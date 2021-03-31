@@ -33,8 +33,6 @@ module.exports = new Promise((resolve, reject) => {
         government: { type: String, lowercase: true, index: true },
         allegiance_id: Number,
         allegiance: { type: String, lowercase: true, index: true },
-        state_id: Number,
-        state: { type: String, lowercase: true, index: true },
         home_system_id: Number,
         is_player_faction: { type: Boolean, index: true }
     }, { runSettersOnQuery: true });

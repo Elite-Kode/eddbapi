@@ -30,6 +30,7 @@ module.exports = new Promise((resolve, reject) => {
         buy_price: Number,
         sell_price: Number,
         demand: Number,
+        demand_bracket: Number,
         collected_at: Date
     }, { runSettersOnQuery: true });
 

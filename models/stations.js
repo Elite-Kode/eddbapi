@@ -29,6 +29,7 @@ module.exports = new Promise((resolve, reject) => {
         name: String,
         name_lower: { type: String, lowercase: true, index: true },
         system_id: { type: Number, ref: 'system.id' },
+        ed_market_id: { type: String, index: true },
         updated_at: Date,
         max_landing_pad_size: { type: String, lowercase: true, index: true },
         distance_to_star: { type: Number, index: true },
@@ -36,8 +37,11 @@ module.exports = new Promise((resolve, reject) => {
         government: { type: String, lowercase: true, index: true },
         allegiance_id: Number,
         allegiance: { type: String, lowercase: true, index: true },
-        state_id: Number,
-        state: { type: String, lowercase: true },
+        states: [{
+            id: Number,
+            name: String,
+            name_lower: { type: String, lowercase: true }
+        }],
         type_id: Number,
         type: { type: String, lowercase: true },
         has_blackmarket: { type: Boolean, index: true },

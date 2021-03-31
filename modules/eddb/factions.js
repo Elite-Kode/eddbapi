@@ -116,7 +116,7 @@ function Factions() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v5/factions.json', pathToFile)
+        new utilities.download('https://eddb.io/archive/v6/factions.json', pathToFile)
             .on('start', response => {
                 console.log(`EDDB faction dump reported with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -136,7 +136,7 @@ function Factions() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v5/factions.json', 'json')
+        new utilities.downloadUpdate('https://eddb.io/archive/v6/factions.json', 'json')
             .on('start', response => {
                 console.log(`EDDB faction dump started with status code ${response.statusCode}`);
                 this.emit('started', {

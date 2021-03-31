@@ -38,8 +38,11 @@ module.exports = new Promise((resolve, reject) => {
         government: { type: String, lowercase: true, index: true },
         allegiance_id: Number,
         allegiance: { type: String, lowercase: true, index: true },
-        state_id: Number,
-        state: { type: String, lowercase: true, index: true },
+        states: [{
+            id: Number,
+            name: String,
+            name_lower: { type: String, lowercase: true }
+        }],
         security_id: Number,
         security: { type: String, lowercase: true, index: true },
         primary_economy_id: Number,
@@ -47,6 +50,7 @@ module.exports = new Promise((resolve, reject) => {
         power: { type: String, lowercase: true, index: true },
         power_state: { type: String, lowercase: true, index: true },
         power_state_id: Number,
+        ed_system_address: { type: String, index: true },
         needs_permit: { type: Boolean, index: true },
         updated_at: Date,
         simbad_ref: { type: String, lowercase: true },
@@ -55,9 +59,23 @@ module.exports = new Promise((resolve, reject) => {
         reserve_type_id: Number,
         reserve_type: { type: String, lowercase: true },
         minor_faction_presences: [{
+            happiness_id: Number,
             minor_faction_id: Number,
-            state_id: Number,
-            state: { type: String, lowercase: true },
+            active_states: [{
+                id: Number,
+                name: String,
+                name_lower: { type: String, lowercase: true }
+            }],
+            pending_states: [{
+                id: Number,
+                name: String,
+                name_lower: { type: String, lowercase: true }
+            }],
+            recovering_states: [{
+                id: Number,
+                name: String,
+                name_lower: { type: String, lowercase: true }
+            }],
             influence: Number
         }]
     }, { runSettersOnQuery: true });

@@ -116,7 +116,7 @@ function Systems() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v5/systems.csv', pathToFile)
+        new utilities.download('https://eddb.io/archive/v6/systems.csv', pathToFile)
             .on('start', response => {
                 console.log(`EDDB system dump reported with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -136,7 +136,7 @@ function Systems() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v5/systems.csv', 'csv')
+        new utilities.downloadUpdate('https://eddb.io/archive/v6/systems.csv', 'csv')
             .on('start', response => {
                 console.log(`EDDB system dump started with status code ${response.statusCode}`);
                 this.emit('started', {

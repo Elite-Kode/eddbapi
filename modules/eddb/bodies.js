@@ -116,7 +116,7 @@ function Bodies() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v5/bodies.jsonl', pathToFile)
+        new utilities.download('https://eddb.io/archive/v6/bodies.jsonl', pathToFile)
             .on('start', response => {
                 console.log(`EDDB body dump reported with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -136,7 +136,7 @@ function Bodies() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v5/bodies_recently.jsonl', 'jsonl')
+        new utilities.downloadUpdate('https://eddb.io/archive/v6/bodies_recently.jsonl', 'jsonl')
             .on('start', response => {
                 console.log(`EDDB body dump started with status code ${response.statusCode}`);
                 this.emit('started', {

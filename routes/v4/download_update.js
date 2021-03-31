@@ -21,7 +21,7 @@ const passport = require('passport');
 
 let router = express.Router();
 
-let eddb = require('../../modules/eddb/v6');
+let eddb = require('../../modules/eddb');
 
 router.get('/', passport.authenticate('basic', { session: false }), (req, res, next) => {
     if (req.user.clearance === 0) {
