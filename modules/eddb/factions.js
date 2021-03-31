@@ -133,7 +133,7 @@ function Factions() {
             })
             .on('json', async json => {
                 try {
-                    await bodiesModel.findOneAndUpdate(
+                    await factionsModel.findOneAndUpdate(
                         {
                             id: json.id,
                             updated_at: { $ne: json.updated_at }
