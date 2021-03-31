@@ -18,7 +18,6 @@
 
 const express = require('express');
 const _ = require('lodash');
-const BluePromise = require('bluebird');
 
 let router = express.Router();
 
@@ -134,238 +133,208 @@ let router = express.Router();
  *           items:
  *             $ref: '#/definitions/StationsPage'
  */
-router.get('/', (req, res, next) => {
-    require('../../models/stations')
-        .then(stations => {
-            let query = new Object;
-            let factionSearch = null;
-            let systemSearch = null;
-            let page = 1;
+router.get('/', async (req, res, next) => {
+    try {
+        let stations = require('../../models/stations')
+        let query = {};
+        let factionSearch = null;
+        let systemSearch = null;
+        let page = 1;
 
-            if (req.query.eddbid) {
-                query.id = req.query.eddbid;
-            }
-            if (req.query.marketid) {
-                query.ed_market_id = req.query.marketid;
-            }
-            if (req.query.name) {
-                query.name_lower = req.query.name.toLowerCase();
-            }
-            if (req.query.ships) {
-                let ships = arrayfy(req.query.ships);
-                query['selling_ships.name_lower'] = { $all: ships };
-            }
-            if (req.query.moduleid) {
-                let modules = arrayfy(req.query.moduleid);
-                query.selling_modules = { $all: modules };
-            }
-            if (req.query.controllingfactionname) {
-                factionSearch = new BluePromise((resolve, reject) => {
-                    require('../../models/factions')
-                        .then(factions => {
-                            let factionQuery = new Object;
+        if (req.query.eddbid) {
+            query.id = req.query.eddbid;
+        }
+        if (req.query.marketid) {
+            query.ed_market_id = req.query.marketid;
+        }
+        if (req.query.name) {
+            query.name_lower = req.query.name.toLowerCase();
+        }
+        if (req.query.ships) {
+            let ships = arrayfy(req.query.ships);
+            query['selling_ships.name_lower'] = { $all: ships };
+        }
+        if (req.query.moduleid) {
+            let modules = arrayfy(req.query.moduleid);
+            query.selling_modules = { $all: modules };
+        }
+        if (req.query.controllingfactionname) {
+            factionSearch = async () => {
+                let factions = require('../../models/factions');
+                let factionQuery = {};
 
-                            factionQuery.name_lower = req.query.controllingfactionname.toLowerCase();
+                factionQuery.name_lower = req.query.controllingfactionname.toLowerCase();
 
-                            let factionProjection = {
-                                _id: 0,
-                                id: 1
-                            }
+                let factionProjection = {
+                    _id: 0,
+                    id: 1
+                }
 
-                            factions.find(factionQuery, factionProjection).lean()
-                                .then(result => {
-                                    let ids = [];
-                                    result.forEach(doc => {
-                                        ids.push(doc.id);
-                                    }, this);
-                                    resolve(ids);
-                                })
-                                .catch(err => {
-                                    err.place = 'faction';
-                                    reject(err);
-                                });
-                        })
-                        .catch(err => {
-                            err.place = 'faction';
-                            reject(err);
-                        });
-                })
-            }
-            if (req.query.statenames) {
-                let states = arrayfy(req.query.statenames);
-                query['states.name_lower'] = { $in: states };
-            }
-            if (req.query.allegiancename) {
-                query.allegiance = req.query.allegiancename.toLowerCase();
-            }
-            if (req.query.governmentname) {
-                query.government = req.query.governmentname.toLowerCase();
-            }
-            if (req.query.minlandingpad) {
-                switch (req.query.minlandingpad.toLowerCase()) {
-                    case 'l':
-                        query.max_landing_pad_size = 'l';
-                        break;
-                    case 'm':
-                        query.max_landing_pad_size = { $in: ['m', 'l'] };
-                        break;
-                    case 's':
-                        query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
-                        break;
-                    default:
-                        query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
+                try {
+                    let result = await factions.find(factionQuery, factionProjection).lean();
+                    let ids = [];
+                    result.forEach(doc => {
+                        ids.push(doc.id);
+                    }, this);
+                    return ids;
+                } catch (err) {
+                    err.place = 'faction';
+                    throw err;
                 }
             }
-            if (req.query.distancestar) {
-                query.distance_to_star = { $lt: req.query.distancestar };
+        }
+        if (req.query.statenames) {
+            let states = arrayfy(req.query.statenames);
+            query['states.name_lower'] = { $in: states };
+        }
+        if (req.query.allegiancename) {
+            query.allegiance = req.query.allegiancename.toLowerCase();
+        }
+        if (req.query.governmentname) {
+            query.government = req.query.governmentname.toLowerCase();
+        }
+        if (req.query.minlandingpad) {
+            switch (req.query.minlandingpad.toLowerCase()) {
+                case 'l':
+                    query.max_landing_pad_size = 'l';
+                    break;
+                case 'm':
+                    query.max_landing_pad_size = { $in: ['m', 'l'] };
+                    break;
+                case 's':
+                    query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
+                    break;
+                default:
+                    query.max_landing_pad_size = { $in: ['s', 'm', 'l'] };
             }
-            if (req.query.facilities) {
-                let facilities = arrayfy(req.query.facilities);
-                facilities.forEach((facility) => {
-                    switch (facility.toLowerCase()) {
-                        case 'blackmarket':
-                            query.has_blackmarket = true;
-                            break;
-                        case 'market':
-                            query.has_market = true;
-                            break;
-                        case 'refuel':
-                            query.has_refuel = true;
-                            break;
-                        case 'repair':
-                            query.has_repair = true;
-                            break;
-                        case 'restock':
-                            query.has_rearm = true;
-                            break;
-                        case 'outfitting':
-                            query.has_outfitting = true;
-                            break;
-                        case 'shipyard':
-                            query.has_shipyard = true;
-                            break;
-                    }
-                }, this);
-            }
-            if (req.query.commodities) {
-                let commodities = arrayfy(req.query.commodities);
-                query['export_commodities.name_lower'] = { $all: commodities };
-            }
-            if (req.query.stationtypename) {
-                let types = arrayfy(req.query.stationtypename);
-                query.type = { $in: types };
-            }
-            if (req.query.planetary) {
-                query.is_planetary = boolify(req.query.planetary);
-            }
-            if (req.query.economyname) {
-                query['economies.name_lower'] = req.query.economyname.toLowerCase();
-            }
-            if (req.query.page) {
-                page = req.query.page;
-            }
-            if (req.query.permit || req.query.power || req.query.powerstatename || req.query.systemname) {
-                systemSearch = new BluePromise((resolve, reject) => {
-                    require('../../models/systems')
-                        .then(systems => {
-                            let systemQuery = new Object;
-
-                            if (req.query.permit) {
-                                systemQuery.needs_permit = boolify(req.query.permit);
-                            }
-                            if (req.query.power) {
-                                let powers = arrayfy(req.query.power);
-                                systemQuery.power = { $in: powers };
-                            }
-                            if (req.query.powerstatename) {
-                                let powerStates = arrayfy(req.query.powerstatename);
-                                systemQuery.power_state = { $in: powerStates };
-                            }
-                            if (req.query.systemname) {
-                                systemQuery.name_lower = req.query.systemname.toLowerCase();
-                            }
-                            let systemProjection = {
-                                _id: 0,
-                                id: 1
-                            }
-
-                            systems.find(systemQuery, systemProjection).lean()
-                                .then(result => {
-                                    let ids = [];
-                                    result.forEach(doc => {
-                                        ids.push(doc.id);
-                                    }, this);
-                                    resolve(ids);
-                                })
-                                .catch(err => {
-                                    err.place = 'system';
-                                    reject(err);
-                                });
-                        })
-                        .catch(err => {
-                            err.place = 'system';
-                            reject(err);
-                        });
-                })
-            }
-
-            let stationSearch = () => {
-                if (_.isEmpty(query)) {
-                    throw new Error("Add at least 1 query parameter to limit traffic");
+        }
+        if (req.query.distancestar) {
+            query.distance_to_star = { $lt: req.query.distancestar };
+        }
+        if (req.query.facilities) {
+            let facilities = arrayfy(req.query.facilities);
+            facilities.forEach((facility) => {
+                switch (facility.toLowerCase()) {
+                    case 'blackmarket':
+                        query.has_blackmarket = true;
+                        break;
+                    case 'market':
+                        query.has_market = true;
+                        break;
+                    case 'refuel':
+                        query.has_refuel = true;
+                        break;
+                    case 'repair':
+                        query.has_repair = true;
+                        break;
+                    case 'restock':
+                        query.has_rearm = true;
+                        break;
+                    case 'outfitting':
+                        query.has_outfitting = true;
+                        break;
+                    case 'shipyard':
+                        query.has_shipyard = true;
+                        break;
                 }
-                let paginateOptions = {
-                    lean: true,
-                    page: page,
-                    limit: 10,
-                    leanWithId: false
-                };
-                stations.paginate(query, paginateOptions)
-                    .then(result => {
-                        res.status(200).json(result);
-                    })
-                    .catch(next)
-            }
+            }, this);
+        }
+        if (req.query.commodities) {
+            let commodities = arrayfy(req.query.commodities);
+            query['export_commodities.name_lower'] = { $all: commodities };
+        }
+        if (req.query.stationtypename) {
+            let types = arrayfy(req.query.stationtypename);
+            query.type = { $in: types };
+        }
+        if (req.query.planetary) {
+            query.is_planetary = boolify(req.query.planetary);
+        }
+        if (req.query.economyname) {
+            query['economies.name_lower'] = req.query.economyname.toLowerCase();
+        }
+        if (req.query.page) {
+            page = req.query.page;
+        }
+        if (req.query.permit || req.query.power || req.query.powerstatename || req.query.systemname) {
+            systemSearch = async () => {
+                let systems = require('../../models/systems');
+                let systemQuery = {};
 
-            if ((factionSearch instanceof BluePromise) && (systemSearch instanceof BluePromise)) {
-                let searches = {
-                    faction: factionSearch,
-                    system: systemSearch
-                };
-                BluePromise.props(Object.keys(searches).reduce((promiseObject, key) => {
-                    promiseObject[key] = searches[key].reflect();
-                    return promiseObject;
-                }, {})).then(searches => {
-                    if (searches.faction.isFulfilled()) {
-                        query.controlling_minor_faction_id = { $in: searches.faction.value() };
-                    } else {
-                        console.log(searches.faction.reason());
-                    }
-                    if (searches.system.isFulfilled()) {
-                        query.system_id = { $in: searches.system.value() };
-                    } else {
-                        console.log(searches.system.reason());
-                    }
-                    stationSearch();
-                })
-            } else if (factionSearch instanceof BluePromise) {
-                factionSearch
-                    .then(ids => {
-                        query.controlling_minor_faction_id = { $in: ids };
-                        stationSearch();
-                    })
-                    .catch(next);
-            } else if (systemSearch instanceof BluePromise) {
-                systemSearch
-                    .then(ids => {
-                        query.system_id = { $in: ids };
-                        stationSearch();
-                    })
-                    .catch(next);
+                if (req.query.permit) {
+                    systemQuery.needs_permit = boolify(req.query.permit);
+                }
+                if (req.query.power) {
+                    let powers = arrayfy(req.query.power);
+                    systemQuery.power = { $in: powers };
+                }
+                if (req.query.powerstatename) {
+                    let powerStates = arrayfy(req.query.powerstatename);
+                    systemQuery.power_state = { $in: powerStates };
+                }
+                if (req.query.systemname) {
+                    systemQuery.name_lower = req.query.systemname.toLowerCase();
+                }
+                let systemProjection = {
+                    _id: 0,
+                    id: 1
+                }
+
+                try {
+                    let result = await systems.find(systemQuery, systemProjection).lean()
+                    let ids = [];
+                    result.forEach(doc => {
+                        ids.push(doc.id);
+                    }, this);
+                    return ids;
+                } catch (err) {
+                    err.place = 'system';
+                    throw err;
+                }
+            }
+        }
+
+        let stationSearch = async () => {
+            if (_.isEmpty(query)) {
+                throw new Error("Add at least 1 query parameter to limit traffic");
+            }
+            let paginateOptions = {
+                lean: true,
+                page: page,
+                limit: 10,
+                leanWithId: false
+            };
+            let result = await stations.paginate(query, paginateOptions);
+            res.status(200).json(result);
+        }
+
+        if ((factionSearch instanceof Promise) && (systemSearch instanceof Promise)) {
+            let results = await Promise.allSettled([factionSearch, systemSearch]);
+            if (results[0].status === 'fulfilled') {
+                query.controlling_minor_faction_id = { $in: results[0].value };
             } else {
-                stationSearch();
+                console.log(results[0].reason);
             }
-        })
-        .catch(next);
+            if (results[1].status === 'fulfilled') {
+                query.system_id = { $in: results[1].value };
+            } else {
+                console.log(results[1].reason);
+            }
+            stationSearch();
+        } else if (factionSearch instanceof Promise) {
+            let ids = await factionSearch
+            query.controlling_minor_faction_id = { $in: ids };
+            stationSearch();
+        } else if (systemSearch instanceof Promise) {
+            let ids = await systemSearch
+            query.system_id = { $in: ids };
+            stationSearch();
+        } else {
+            stationSearch();
+        }
+    } catch (err) {
+        next(err);
+    }
 });
 
 let arrayfy = requestParam => {

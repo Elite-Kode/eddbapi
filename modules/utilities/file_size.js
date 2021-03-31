@@ -20,11 +20,7 @@ const fs = require('fs-extra');
 const fileSize = require('filesize');
 
 module.exports.withPath = filePath => {
-    let fileSizeOptions = {
-        exponent: 1,
-        standard: "iec"
-    }
-    return fileSize(fs.statSync(filePath).size, fileSizeOptions);
+    return this.withValue(fs.statSync(filePath).size);
 }
 
 module.exports.withValue = value => {
@@ -32,5 +28,5 @@ module.exports.withValue = value => {
         exponent: 1,
         standard: "iec"
     }
-    return fileSize(value);
+    return fileSize(value, fileSizeOptions);
 }

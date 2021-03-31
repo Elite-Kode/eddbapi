@@ -22,141 +22,126 @@ const _ = require('lodash');
 let router = express.Router();
 
 /**
-   * @swagger
-   * /factions:
-   *   get:
-   *     description: Get the Factions
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: eddbid
-   *         description: EDDB ID.
-   *         in: query
-   *         type: integer
-   *       - name: name
-   *         description: Faction name.
-   *         in: query
-   *         type: string
-   *       - name: allegiancename
-   *         description: Name of the allegiance.
-   *         in: query
-   *         type: string
-   *       - name: governmentname
-   *         description: Name of the government type.
-   *         in: query
-   *         type: string
-   *       - name: playerfaction
-   *         description: Whether the faction is a player faction.
-   *         in: query
-   *         type: boolean
-   *       - name: power
-   *         description: Name of the power in influence in a system the faction is in.
-   *         in: query
-   *         type: string
-   *       - name: homesystemname
-   *         description: Name of the home system of the faction.
-   *         in: query
-   *         type: string
-   *       - name: page
-   *         description: Page no of response.
-   *         in: query
-   *         type: integer
-   *     responses:
-   *       200:
-   *         description: An array of factions in EDDB format
-   *         schema:
-   *           type: array
-   *           items:
-   *             $ref: '#/definitions/FactionsPage'
-   */
-router.get('/', (req, res, next) => {
-    require('../../models/factions')
-        .then(factions => {
-            let query = new Object;
-            let systemSearch = null;
-            let page = 1;
+ * @swagger
+ * /factions:
+ *   get:
+ *     description: Get the Factions
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: eddbid
+ *         description: EDDB ID.
+ *         in: query
+ *         type: integer
+ *       - name: name
+ *         description: Faction name.
+ *         in: query
+ *         type: string
+ *       - name: allegiancename
+ *         description: Name of the allegiance.
+ *         in: query
+ *         type: string
+ *       - name: governmentname
+ *         description: Name of the government type.
+ *         in: query
+ *         type: string
+ *       - name: playerfaction
+ *         description: Whether the faction is a player faction.
+ *         in: query
+ *         type: boolean
+ *       - name: power
+ *         description: Name of the power in influence in a system the faction is in.
+ *         in: query
+ *         type: string
+ *       - name: homesystemname
+ *         description: Name of the home system of the faction.
+ *         in: query
+ *         type: string
+ *       - name: page
+ *         description: Page no of response.
+ *         in: query
+ *         type: integer
+ *     responses:
+ *       200:
+ *         description: An array of factions in EDDB format
+ *         schema:
+ *           type: array
+ *           items:
+ *             $ref: '#/definitions/FactionsPage'
+ */
+router.get('/', async (req, res, next) => {
+    try {
+        let factions = require('../../models/factions');
+        let query = {};
+        let systemSearch = null;
+        let page = 1;
 
-            if (req.query.eddbid) {
-                query.id = req.query.eddbid;
-            }
-            if (req.query.name) {
-                query.name_lower = req.query.name.toLowerCase();
-            }
-            if (req.query.allegiancename) {
-                query.allegiance = req.query.allegiancename.toLowerCase();
-            }
-            if (req.query.governmentname) {
-                query.government = req.query.governmentname.toLowerCase();
-            }
-            if (req.query.playerfaction) {
-                query.is_player_faction = boolify(req.query.playerfaction);
-            }
-            if (req.query.page) {
-                page = req.query.page;
-            }
-            if (req.query.homesystemname || req.query.power) {
-                systemSearch = new Promise((resolve, reject) => {
-                    require('../../models/systems')
-                        .then(systems => {
-                            let systemQuery = new Object;
+        if (req.query.eddbid) {
+            query.id = req.query.eddbid;
+        }
+        if (req.query.name) {
+            query.name_lower = req.query.name.toLowerCase();
+        }
+        if (req.query.allegiancename) {
+            query.allegiance = req.query.allegiancename.toLowerCase();
+        }
+        if (req.query.governmentname) {
+            query.government = req.query.governmentname.toLowerCase();
+        }
+        if (req.query.playerfaction) {
+            query.is_player_faction = boolify(req.query.playerfaction);
+        }
+        if (req.query.page) {
+            page = req.query.page;
+        }
+        if (req.query.homesystemname || req.query.power) {
+            systemSearch = async () => {
+                let systems = require('../../models/systems');
+                let systemQuery = {};
 
-                            if (req.query.homesystemname) {
-                                systemQuery.name_lower = req.query.homesystemname.toLowerCase();
-                            }
-                            if (req.query.power) {
-                                systemQuery.power = req.query.power.toLowerCase();
-                            }
-                            let systemProjection = {
-                                _id: 0,
-                                id: 1
-                            }
-                            systems.find(systemQuery, systemProjection).lean()
-                                .then(result => {
-                                    let ids = [];
-                                    result.forEach(doc => {
-                                        ids.push(doc.id);
-                                    }, this);
-                                    resolve(ids);
-                                })
-                                .catch(err => {
-                                    reject(err);
-                                })
-                        })
-                        .catch(err => {
-                            reject(err);
-                        });
-                })
-            }
-
-            let factionSearch = () => {
-                if (_.isEmpty(query)) {
-                    throw new Error("Add at least 1 query parameter to limit traffic");
+                if (req.query.homesystemname) {
+                    systemQuery.name_lower = req.query.homesystemname.toLowerCase();
                 }
-                let paginateOptions = {
-                    lean: true,
-                    page: page,
-                    limit: 10,
-                    leanWithId: false
-                };
-                factions.paginate(query, paginateOptions)
-                    .then(result => {
-                        res.status(200).json(result);
-                    })
-                    .catch(next)
+                if (req.query.power) {
+                    systemQuery.power = req.query.power.toLowerCase();
+                }
+                let systemProjection = {
+                    _id: 0,
+                    id: 1
+                }
+                let result = await systems.find(systemQuery, systemProjection).lean()
+                let ids = [];
+                result.forEach(doc => {
+                    ids.push(doc.id);
+                }, this);
+                return ids;
             }
+        }
 
-            if (systemSearch instanceof Promise) {
-                systemSearch
-                    .then(ids => {
-                        query.home_system_id = { $in: ids };
-                        factionSearch();
-                    })
-                    .catch(next)
-            } else {
-                factionSearch();
+        let factionSearch = async () => {
+            if (_.isEmpty(query)) {
+                throw new Error("Add at least 1 query parameter to limit traffic");
             }
-        })
-        .catch(next);
+            let paginateOptions = {
+                lean: true,
+                page: page,
+                limit: 10,
+                leanWithId: false
+            };
+            let result = await factions.paginate(query, paginateOptions)
+            res.status(200).json(result);
+        }
+
+        if (systemSearch instanceof Promise) {
+            let ids = await systemSearch
+            query.home_system_id = { $in: ids };
+            factionSearch();
+        } else {
+            factionSearch();
+        }
+    } catch (err) {
+        next(err);
+    }
 });
 
 let boolify = requestParam => {

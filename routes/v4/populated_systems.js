@@ -96,121 +96,105 @@ let router = express.Router();
  *           items:
  *             $ref: '#/definitions/PopulatedSystemsPage'
  */
-router.get('/', (req, res, next) => {
-    require('../../models/populated_systems')
-        .then(populatedSystems => {
-            let query = new Object;
-            let factionSearch = null;
-            let page = 1;
+router.get('/', async (req, res, next) => {
+    try {
+        let populatedSystems = require('../../models/populated_systems');
+        let query = {};
+        let factionSearch = null;
+        let page = 1;
 
-            if (req.query.eddbid) {
-                query.id = req.query.eddbid;
+        if (req.query.eddbid) {
+            query.id = req.query.eddbid;
+        }
+        if (req.query.systemaddress) {
+            query.ed_system_address = req.query.systemaddress;
+        }
+        if (req.query.name) {
+            query.name_lower = req.query.name.toLowerCase();
+        }
+        if (req.query.allegiancename) {
+            query.allegiance = req.query.allegiancename.toLowerCase();
+        }
+        if (req.query.governmentname) {
+            query.government = req.query.governmentname.toLowerCase();
+        }
+        if (req.query.statenames) {
+            let states = arrayfy(req.query.statenames);
+            query['states.name_lower'] = { $in: states };
+        }
+        if (req.query.primaryeconomyname) {
+            query.primary_economy = req.query.primaryeconomyname.toLowerCase();
+        }
+        if (req.query.power) {
+            let powers = arrayfy(req.query.power);
+            query.power = { $in: powers };
+        }
+        if (req.query.powerstatename) {
+            let powerStates = arrayfy(req.query.powerstatename);
+            query.power_state = { $in: powerStates };
+        }
+        if (req.query.permit) {
+            query.needs_permit = boolify(req.query.permit);
+        }
+        if (req.query.securityname) {
+            query.security = req.query.securityname.toLowerCase();
+        }
+        if (req.query.page) {
+            page = req.query.page;
+        }
+        if (req.query.factionname) {
+            let presencetype = 'presence';
+            if (req.query.presencetype) {
+                presencetype = req.query.presencetype.toLowerCase();
             }
-            if (req.query.systemaddress) {
-                query.ed_system_address = req.query.systemaddress;
-            }
-            if (req.query.name) {
-                query.name_lower = req.query.name.toLowerCase();
-            }
-            if (req.query.allegiancename) {
-                query.allegiance = req.query.allegiancename.toLowerCase();
-            }
-            if (req.query.governmentname) {
-                query.government = req.query.governmentname.toLowerCase();
-            }
-            if (req.query.statenames) {
-                let states = arrayfy(req.query.statenames);
-                query['states.name_lower'] = { $in: states };
-            }
-            if (req.query.primaryeconomyname) {
-                query.primary_economy = req.query.primaryeconomyname.toLowerCase();
-            }
-            if (req.query.power) {
-                let powers = arrayfy(req.query.power);
-                query.power = { $in: powers };
-            }
-            if (req.query.powerstatename) {
-                let powerStates = arrayfy(req.query.powerstatename);
-                query.power_state = { $in: powerStates };
-            }
-            if (req.query.permit) {
-                query.needs_permit = boolify(req.query.permit);
-            }
-            if (req.query.securityname) {
-                query.security = req.query.securityname.toLowerCase();
-            }
-            if (req.query.page) {
-                page = req.query.page;
-            }
-            if (req.query.factionname) {
-                let presencetype = 'presence';
-                if (req.query.presencetype) {
-                    presencetype = req.query.presencetype.toLowerCase();
-                }
-                if (presencetype === 'controlling') {
-                    query.controlling_minor_faction = req.query.factionname.toLowerCase();
-                } else if (presencetype === 'presence') {
-                    factionSearch = new Promise((resolve, reject) => {
-                        require('../../models/factions')
-                            .then(factions => {
-                                let factionQuery = new Object;
+            if (presencetype === 'controlling') {
+                query.controlling_minor_faction = req.query.factionname.toLowerCase();
+            } else if (presencetype === 'presence') {
+                factionSearch = async () => {
+                    let factions = require('../../models/factions');
+                    let factionQuery = {};
 
-                                factionQuery.name_lower = req.query.factionname.toLowerCase();
+                    factionQuery.name_lower = req.query.factionname.toLowerCase();
 
-                                let factionProjection = {
-                                    _id: 0,
-                                    id: 1
-                                }
+                    let factionProjection = {
+                        _id: 0,
+                        id: 1
+                    }
 
-                                factions.find(factionQuery, factionProjection).lean()
-                                    .then(result => {
-                                        let ids = [];
-                                        result.forEach(doc => {
-                                            ids.push(doc.id);
-                                        }, this);
-                                        resolve(ids);
-                                    })
-                                    .catch(err => {
-                                        reject(err);
-                                    });
-                            })
-                            .catch(err => {
-                                reject(err);
-                            });
-                    })
+                    let result = await factions.find(factionQuery, factionProjection).lean();
+                    let ids = [];
+                    result.forEach(doc => {
+                        ids.push(doc.id);
+                    }, this);
+                    return ids;
                 }
             }
+        }
 
-            let systemSearch = () => {
-                if (_.isEmpty(query)) {
-                    throw new Error("Add at least 1 query parameter to limit traffic");
-                }
-                let paginateOptions = {
-                    lean: true,
-                    page: page,
-                    limit: 10,
-                    leanWithId: false
-                };
-                populatedSystems.paginate(query, paginateOptions)
-                    .then(result => {
-                        res.status(200).json(result);
-                    })
-                    .catch(next)
+        let systemSearch = async () => {
+            if (_.isEmpty(query)) {
+                throw new Error("Add at least 1 query parameter to limit traffic");
             }
+            let paginateOptions = {
+                lean: true,
+                page: page,
+                limit: 10,
+                leanWithId: false
+            };
+            let result = await populatedSystems.paginate(query, paginateOptions);
+            res.status(200).json(result);
+        }
 
-            if (factionSearch instanceof Promise) {
-                factionSearch
-                    .then(ids => {
-                        query["minor_faction_presences.minor_faction_id"] = { $in: ids };
-                        systemSearch();
-                    })
-                    .catch(next)
-            } else {
-                systemSearch();
-            }
-
-        })
-        .catch(next);
+        if (factionSearch instanceof Promise) {
+            let ids = await factionSearch;
+            query["minor_faction_presences.minor_faction_id"] = { $in: ids };
+            systemSearch();
+        } else {
+            systemSearch();
+        }
+    } catch (err) {
+        next(err);
+    }
 });
 
 let arrayfy = requestParam => {

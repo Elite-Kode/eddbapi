@@ -21,10 +21,10 @@ const swaggerUi = require('swagger-ui-express');
 const path = require('path');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
-var cors = require('cors')
+const cors = require('cors')
 
-const bugsnagClient = require('./bugsnag');
-const bugsnagClientMiddleware = bugsnagClient.getPlugin('express');
+const secrets = require('./secrets');
+const bugsnagClient = require('./bugsnag').bugsnagClient;
 const swagger = require('./swagger');
 
 require('./modules/cron').EDDBDownloadTrigger();
@@ -67,7 +67,14 @@ const systemsV4 = require('./routes/v4/systems');
 
 const app = express();
 
-app.use(bugsnagClientMiddleware.requestHandler);
+require('./db')
+
+let bugsnagClientMiddleware = {}
+
+if (secrets.bugsnag_use) {
+    bugsnagClientMiddleware = bugsnagClient.getPlugin('express');
+    app.use(bugsnagClientMiddleware.requestHandler);
+}
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -134,7 +141,9 @@ app.use('/api/v3/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv3));
 app.use('/api/v4/docs', swaggerUi.serve, swaggerUi.setup(swagger.EDDBAPIv4));
 
 // error handlers
-app.use(bugsnagClientMiddleware.errorHandler);
+if (secrets.bugsnag_use) {
+    app.use(bugsnagClientMiddleware.errorHandler);
+}
 
 // development error handler
 // will print stacktrace

@@ -16,50 +16,42 @@
 
 "use strict";
 
+const mongoose = require('mongoose');
 let mongoosePaginate = require('mongoose-paginate');
 
-module.exports = new Promise((resolve, reject) => {
-    let db = require('../db');
-    let connection = db.eddb_api;
-    let mongoose = db.mongoose;
-    let Schema = mongoose.Schema;
+let faction = new mongoose.Schema({
+    id: { type: Number, unique: true, index: true },
+    name: String,
+    name_lower: { type: String, lowercase: true, index: true },
+    updated_at: Date,
+    government_id: Number,
+    government: { type: String, lowercase: true, index: true },
+    allegiance_id: Number,
+    allegiance: { type: String, lowercase: true, index: true },
+    home_system_id: Number,
+    is_player_faction: { type: Boolean, index: true }
+}, { runSettersOnQuery: true });
 
-    let faction = new Schema({
-        id: { type: Number, unique: true, index: true },
-        name: String,
-        name_lower: { type: String, lowercase: true, index: true },
-        updated_at: Date,
-        government_id: Number,
-        government: { type: String, lowercase: true, index: true },
-        allegiance_id: Number,
-        allegiance: { type: String, lowercase: true, index: true },
-        home_system_id: Number,
-        is_player_faction: { type: Boolean, index: true }
-    }, { runSettersOnQuery: true });
+faction.pre('save', function (next) {
+    lowerify(this);
+    millisecondify(this);
+    next();
+});
 
-    faction.pre('save', function (next) {
-        lowerify(this);
-        millisecondify(this);
-        next();
-    });
+faction.pre('findOneAndUpdate', function (next) {
+    lowerify(this._update);
+    millisecondify(this._update);
+    next();
+});
 
-    faction.pre('findOneAndUpdate', function (next) {
-        lowerify(this._update);
-        millisecondify(this._update);
-        next();
-    });
+faction.plugin(mongoosePaginate);
 
-    faction.plugin(mongoosePaginate);
+let lowerify = ref => {
+    ref.name_lower = ref.name;
+}
 
-    let model = connection.model('faction', faction);
+let millisecondify = ref => {
+    ref.updated_at *= 1000;
+}
 
-    let lowerify = ref => {
-        ref.name_lower = ref.name;
-    }
-
-    let millisecondify = ref => {
-        ref.updated_at *= 1000;
-    }
-
-    resolve(model);
-})
+module.exports = mongoose.model('faction', faction);

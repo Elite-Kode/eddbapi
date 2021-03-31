@@ -81,63 +81,61 @@ let router = express.Router();
  *           items:
  *             $ref: '#/definitions/SystemsPage'
  */
-router.get('/', (req, res, next) => {
-    require('../../models/systems')
-        .then(systems => {
-            let query = new Object;
-            let page = 1;
+router.get('/', async (req, res, next) => {
+    try {
+        let systems = require('../../models/systems');
+        let query = {};
+        let page = 1;
 
-            if (req.query.eddbid) {
-                query.id = req.query.eddbid;
-            }
-            if (req.query.systemaddress) {
-                query.ed_system_address = req.query.systemaddress;
-            }
-            if (req.query.name) {
-                query.name_lower = req.query.name.toLowerCase();
-            }
-            if (req.query.allegiancename) {
-                query.allegiance = req.query.allegiancename.toLowerCase();
-            }
-            if (req.query.governmentname) {
-                query.government = req.query.governmentname.toLowerCase();
-            }
-            if (req.query.primaryeconomyname) {
-                query.primary_economy = req.query.primaryeconomyname.toLowerCase();
-            }
-            if (req.query.power) {
-                let powers = arrayfy(req.query.power);
-                query.power = { $in: powers };
-            }
-            if (req.query.powerstatename) {
-                let powerStates = arrayfy(req.query.powerstatename);
-                query.power_state = { $in: powerStates };
-            }
-            if (req.query.permit) {
-                query.needs_permit = boolify(req.query.permit);
-            }
-            if (req.query.securityname) {
-                query.security = req.query.securityname.toLowerCase();
-            }
-            if (req.query.page) {
-                page = req.query.page;
-            }
-            if (_.isEmpty(query)) {
-                throw new Error("Add at least 1 query parameter to limit traffic");
-            }
-            let paginateOptions = {
-                lean: true,
-                page: page,
-                limit: 10,
-                leanWithId: false
-            };
-            systems.paginate(query, paginateOptions)
-                .then(result => {
-                    res.status(200).json(result);
-                })
-                .catch(next)
-        })
-        .catch(next);
+        if (req.query.eddbid) {
+            query.id = req.query.eddbid;
+        }
+        if (req.query.systemaddress) {
+            query.ed_system_address = req.query.systemaddress;
+        }
+        if (req.query.name) {
+            query.name_lower = req.query.name.toLowerCase();
+        }
+        if (req.query.allegiancename) {
+            query.allegiance = req.query.allegiancename.toLowerCase();
+        }
+        if (req.query.governmentname) {
+            query.government = req.query.governmentname.toLowerCase();
+        }
+        if (req.query.primaryeconomyname) {
+            query.primary_economy = req.query.primaryeconomyname.toLowerCase();
+        }
+        if (req.query.power) {
+            let powers = arrayfy(req.query.power);
+            query.power = { $in: powers };
+        }
+        if (req.query.powerstatename) {
+            let powerStates = arrayfy(req.query.powerstatename);
+            query.power_state = { $in: powerStates };
+        }
+        if (req.query.permit) {
+            query.needs_permit = boolify(req.query.permit);
+        }
+        if (req.query.securityname) {
+            query.security = req.query.securityname.toLowerCase();
+        }
+        if (req.query.page) {
+            page = req.query.page;
+        }
+        if (_.isEmpty(query)) {
+            throw new Error("Add at least 1 query parameter to limit traffic");
+        }
+        let paginateOptions = {
+            lean: true,
+            page: page,
+            limit: 10,
+            leanWithId: false
+        };
+        let result = await systems.paginate(query, paginateOptions);
+        res.status(200).json(result);
+    } catch (err) {
+        next(err);
+    }
 });
 
 let arrayfy = requestParam => {

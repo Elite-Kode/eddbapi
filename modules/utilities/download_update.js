@@ -16,25 +16,25 @@
 
 "use strict";
 
-const request = require('request');
-const progress = require('request-progress');
-const fs = require('fs-extra');
+const got = require('got');
 const ndjson = require('ndjson');
 const jsonStream = require('JSONStream');
 const csvtojson = require('csvtojson/v1');
 const eventEmmiter = require('events').EventEmitter;
 const inherits = require('util').inherits;
 
-let fileSize = require('../utilities/file_size');
 module.exports = DownloadUpdate;
 
 function DownloadUpdate(pathFrom, type) {
     eventEmmiter.call(this);
     if (type === 'jsonl') {
-        request.get(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
+        got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
             .on('response', response => {
                 response.statusCode = 200;
                 this.emit('start', response);
+            })
+            .on('error', error => {
+                this.emit('error', error);
             })
             .pipe(ndjson.parse())
             .on('data', json => {
@@ -47,10 +47,13 @@ function DownloadUpdate(pathFrom, type) {
                 this.emit('error', error);
             })
     } else if (type === 'json') {
-        request.get(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
+        got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
             .on('response', response => {
                 response.statusCode = 200;
                 this.emit('start', response);
+            })
+            .on('error', error => {
+                this.emit('error', error);
             })
             .pipe(jsonStream.parse('*'))
             .on('data', json => {
@@ -64,10 +67,13 @@ function DownloadUpdate(pathFrom, type) {
             })
     } else if (type === 'csv') {
         csvtojson()
-            .fromStream(request.get(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
+            .fromStream(got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
                 .on('response', response => {
                     response.statusCode = 200;
                     this.emit('start', response);
+                })
+                .on('error', error => {
+                    this.emit('error', error);
                 }))
             .on('json', json => {
                 this.emit('json', json);

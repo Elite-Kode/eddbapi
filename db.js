@@ -19,52 +19,44 @@
 let mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 
-const bugsnagClient = require('./bugsnag');
+const bugsnagCaller = require('./bugsnag').bugsnagCaller;
 
 let eddb_api_url = require('./secrets').eddb_api_db_url;
+let eddb_api_db_user = require('./secrets').eddb_api_db_user;
+let eddb_api_db_pwd = require('./secrets').eddb_api_db_pwd;
 
-let eddb_api_connection;
-
-function connect() {
-    eddb_api_connection = mongoose.createConnection(eddb_api_url);
+let options = {
+    keepAlive: true,
+    keepAliveInitialDelay: 120000,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    user: eddb_api_db_user,
+    pass: eddb_api_db_pwd
 }
 
-connect();
+mongoose.connect(eddb_api_url, options, err => {
+    if (err) {
+        bugsnagCaller(err);
+        console.log(err);
+    }
+});
 
-eddb_api_connection.on('connected', () => {
+
+mongoose.connection.on('connected', () => {
     console.log(`Connected to ${eddb_api_url}`);
 });
 
-eddb_api_connection.on('error', err => {
-    bugsnagClient.notify(err);
+mongoose.connection.on('error', err => {
+    bugsnagCaller(err);
     console.log(`Mongoose error ${err}`);
 });
 
-(function () {
-    let tracker = 0;
-    eddb_api_connection.on('disconnected', () => {
-        console.log(`Mongoose connection to ${eddb_api_url} disconnected`);
-        if (tracker < 5) {
-            console.log('Mongoose disconnected. Reconnecting in 5 seconds');
-            tracker++;
-
-            setTimeout(() => {
-                tracker--;
-            }, 60000);
-
-            setTimeout(() => {
-                connect();
-            }, 5000);
-        }
-    })
+mongoose.connection.on('disconnected', () => {
+    console.log('Mongoose connection disconnected');
 });
 
-process.on('SIGINT', () => {
-    eddb_api_connection.close(() => {
-        console.log(`Connection to ${eddb_api_url} closed via app termination`);
-    });
+process.on('SIGINT', async () => {
+    await mongoose.connection.close();
+    console.log(`Connection to ${eddb_api_url} closed via app termination`);
     process.exit(0);
 });
-
-module.exports.eddb_api = eddb_api_connection;
-module.exports.mongoose = mongoose;

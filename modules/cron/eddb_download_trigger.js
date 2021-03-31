@@ -24,7 +24,7 @@ module.exports = Trigger;
 
 function Trigger() {
     let cronPattern = `${eddbTime.split(':')[2]} ${eddbTime.split(':')[1]} ${eddbTime.split(':')[0]} * * *`;
-    let cronJob = new cron.CronJob(cronPattern, () => {
+    let cronJob = new cron.CronJob(cronPattern, async () => {
         console.log('EDDB CRONjob execute');
 
         let bodiesDownloadUpdate = () => {
@@ -111,12 +111,16 @@ function Trigger() {
             });
         }
 
-        // bodiesDownloadUpdate()
-        commoditiesDownloadUpdate()
-            .then(factionsDownloadUpdate)
-            .then(stationsDownloadUpdate)
-            .then(populatedSystemsDownloadUpdate)
-            .then(systemsDownloadUpdate)
+        try {
+            // await bodiesDownloadUpdate();
+            await commoditiesDownloadUpdate();
+            await factionsDownloadUpdate();
+            await stationsDownloadUpdate();
+            await populatedSystemsDownloadUpdate();
+            await systemsDownloadUpdate();
+        } catch (err) {
+            console.log(err)
+        }
     });
     cronJob.start();
 }
