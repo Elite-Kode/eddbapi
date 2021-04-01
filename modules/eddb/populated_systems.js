@@ -17,7 +17,7 @@
 "use strict";
 
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('fs');
 const populatedSystemsModel = require('../../models/populated_systems');
 const utilities = require('../utilities');
 const eventEmmiter = require('events').EventEmitter;
