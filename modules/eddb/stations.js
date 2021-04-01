@@ -79,7 +79,8 @@ function Stations() {
 
     this.import = function () {
         let recordsInserted = 0;
-        new utilities.jsonParse(pathToFile)
+        let stream = utilities.jsonParse(pathToFile);
+        stream
             .on('start', () => {
                 console.log(`EDDB station dump insertion reported`);
                 this.emit('started', {
@@ -88,7 +89,8 @@ function Stations() {
                     type: 'station'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 json = modify(json);
                 try {
                     let document = new stationsModel(json);
@@ -96,6 +98,8 @@ function Stations() {
                     recordsInserted++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {
@@ -111,9 +115,9 @@ function Stations() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v6/stations.json', pathToFile)
+        utilities.download('https://eddb.io/archive/v6/stations.json', pathToFile)
             .on('start', response => {
-                console.log(`EDDB station reported with status code ${response.statusCode}`);
+                console.log(`EDDB station dump reported with status code ${response.statusCode}`);
                 this.emit('started', {
                     response: response,
                     insertion: "started",
@@ -131,7 +135,8 @@ function Stations() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v6/stations.json', 'json')
+        let stream = utilities.downloadUpdate('https://eddb.io/archive/v6/stations.json', 'json');
+        stream
             .on('start', response => {
                 console.log(`EDDB station dump started with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -140,7 +145,8 @@ function Stations() {
                     type: 'station'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 json = modify(json);
                 try {
                     await stationsModel.findOneAndUpdate(
@@ -156,6 +162,8 @@ function Stations() {
                     recordsUpdated++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {
