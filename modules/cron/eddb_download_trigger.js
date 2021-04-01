@@ -281,23 +281,23 @@ function Trigger() {
 
         try {
             // await bodiesDownloadUpdate();
-            // await commoditiesDownloadUpdate();
-            // await factionsDownloadUpdate();
-            // await stationsDownloadUpdate();
-            // await populatedSystemsDownloadUpdate();
-            // await systemsDownloadUpdate();
-            await Promise.all([
-                commoditiesDownload(),
-                factionsDownload(),
-                stationsDownload(),
-                populatedSystemsDownload(),
-                systemsDownload()
-            ]);
-            commoditiesUpdate().catch(err => console.log(err));
-            factionsUpdate().catch(err => console.log(err));
-            stationsUpdate().catch(err => console.log(err));
-            populatedSystemsUpdate().catch(err => console.log(err));
-            systemsUpdate().catch(err => console.log(err));
+            await commoditiesDownloadUpdate();
+            await factionsDownloadUpdate();
+            await stationsDownloadUpdate();
+            await populatedSystemsDownloadUpdate();
+            await systemsDownloadUpdate();
+            // await Promise.all([
+            //     commoditiesDownload(),
+            //     factionsDownload(),
+            //     stationsDownload(),
+            //     populatedSystemsDownload(),
+            //     systemsDownload()
+            // ]);
+            // commoditiesUpdate().catch(err => console.log(err));
+            // factionsUpdate().catch(err => console.log(err));
+            // stationsUpdate().catch(err => console.log(err));
+            // populatedSystemsUpdate().catch(err => console.log(err));
+            // systemsUpdate().catch(err => console.log(err));
         } catch (err) {
             console.log(err)
         }
