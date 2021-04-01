@@ -34,7 +34,8 @@ function PopulatedSystems() {
 
     this.update = function () {
         let recordsUpdated = 0;
-        new utilities.jsonParse(pathToFile)
+        let stream = utilities.jsonParse(pathToFile);
+        stream
             .on('start', () => {
                 console.log(`EDDB populated system dump update reported`);
                 this.emit('started', {
@@ -43,7 +44,8 @@ function PopulatedSystems() {
                     type: 'populated system'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 json = modify(json);
                 try {
                     await populatedSystemsModel.findOneAndUpdate(
@@ -59,6 +61,8 @@ function PopulatedSystems() {
                     recordsUpdated++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {
@@ -171,6 +175,7 @@ function PopulatedSystems() {
             minor_faction_presences[index].pending_states = statify(minor_faction_presence.pending_states);
             minor_faction_presences[index].recovering_states = statify(minor_faction_presence.recovering_states);
         });
+        return json;
     }
 }
 

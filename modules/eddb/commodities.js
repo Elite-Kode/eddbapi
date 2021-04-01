@@ -34,7 +34,8 @@ function Commodities() {
 
     this.update = function () {
         let recordsUpdated = 0;
-        new utilities.csvToJson(pathToFile)
+        let stream = utilities.csvToJson(pathToFile);
+        stream
             .on('start', () => {
                 console.log(`EDDB commodity dump update reported`);
                 this.emit('started', {
@@ -43,7 +44,8 @@ function Commodities() {
                     type: 'commodity'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 try {
                     await commoditiesModel.findOneAndUpdate(
                         { id: json.id },
@@ -55,6 +57,8 @@ function Commodities() {
                     recordsUpdated++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {

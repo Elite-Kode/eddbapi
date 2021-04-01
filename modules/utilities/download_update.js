@@ -45,7 +45,7 @@ function DownloadUpdate(pathFrom, type) {
             })
             .on('error', error => {
                 this.emit('error', error);
-            })
+            });
     } else if (type === 'json') {
         got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
             .on('response', response => {
@@ -64,18 +64,18 @@ function DownloadUpdate(pathFrom, type) {
             })
             .on('error', error => {
                 this.emit('error', error);
-            })
+            });
     } else if (type === 'csv') {
-        csvtojson()
-            .fromStream(got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
-                .on('response', response => {
-                    response.statusCode = 200;
-                    this.emit('start', response);
-                })
-                .on('error', error => {
-                    this.emit('error', error);
-                }))
-            .on('json', json => {
+        got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
+            .on('response', response => {
+                response.statusCode = 200;
+                this.emit('start', response);
+            })
+            .on('error', error => {
+                this.emit('error', error);
+            })
+            .pipe(csvtojson())
+            .on('data', json => {
                 this.emit('json', json);
             })
             .on('done', (error) => {
@@ -84,6 +84,9 @@ function DownloadUpdate(pathFrom, type) {
                 } else {
                     this.emit('end');
                 }
+            })
+            .on('error', error => {
+                this.emit('error', error);
             });
     }
 }
