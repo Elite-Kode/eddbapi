@@ -17,7 +17,7 @@
 "use strict";
 
 const got = require('got');
-const fs = require('fs-extra');
+const fs = require('fs');
 const eventEmmiter = require('events').EventEmitter;
 const inherits = require('util').inherits;
 

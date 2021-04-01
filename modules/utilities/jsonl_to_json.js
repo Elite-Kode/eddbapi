@@ -16,7 +16,7 @@
 
 "use strict";
 
-const fs = require('fs-extra');
+const fs = require('fs');
 const ndjson = require('ndjson');
 const eventEmmiter = require('events').EventEmitter;
 const inherits = require('util').inherits;
