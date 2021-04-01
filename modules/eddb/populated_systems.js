@@ -44,9 +44,13 @@ function PopulatedSystems() {
                 });
             })
             .on('json', async json => {
+                json = modify(json);
                 try {
                     await populatedSystemsModel.findOneAndUpdate(
-                        { id: json.id },
+                        {
+                            id: json.id,
+                            updated_at: { $ne: json.updated_at }
+                        },
                         json,
                         {
                             upsert: true,
@@ -81,6 +85,7 @@ function PopulatedSystems() {
                 });
             })
             .on('json', async json => {
+                json = modify(json);
                 try {
                     let document = new populatedSystemsModel(json);
                     await document.save()
@@ -132,12 +137,7 @@ function PopulatedSystems() {
                 });
             })
             .on('json', async json => {
-                json.states = statify(json.states);
-                json.minor_faction_presences.forEach((minor_faction_presence, index, minor_faction_presences) => {
-                    minor_faction_presences[index].active_states = statify(minor_faction_presence.active_states);
-                    minor_faction_presences[index].pending_states = statify(minor_faction_presence.pending_states);
-                    minor_faction_presences[index].recovering_states = statify(minor_faction_presence.recovering_states);
-                });
+                json = modify(json);
                 try {
                     await populatedSystemsModel.findOneAndUpdate(
                         {
@@ -163,17 +163,14 @@ function PopulatedSystems() {
             })
     }
 
-    let statify = ref => {
-        let entities = ref;
-        ref = [];
-        entities.forEach((entity, index, allEntities) => {
-            ref.push({
-                id: entity.id,
-                name: entity.name,
-                name_lower: entity.name.toLowerCase()
-            });
-        }, this);
-        return ref;
+    let modify = json => {
+        let statify = utilities.modify.statify;
+        json.states = statify(json.states);
+        json.minor_faction_presences.forEach((minor_faction_presence, index, minor_faction_presences) => {
+            minor_faction_presences[index].active_states = statify(minor_faction_presence.active_states);
+            minor_faction_presences[index].pending_states = statify(minor_faction_presence.pending_states);
+            minor_faction_presences[index].recovering_states = statify(minor_faction_presence.recovering_states);
+        });
     }
 }
 

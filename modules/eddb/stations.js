@@ -44,14 +44,13 @@ function Stations() {
                 });
             })
             .on('json', async json => {
-                json.import_commodities = objectify(json.import_commodities);
-                json.export_commodities = objectify(json.export_commodities);
-                json.prohibited_commodities = objectify(json.prohibited_commodities);
-                json.economies = objectify(json.economies);
-                json.selling_ships = objectify(json.selling_ships);
+                json = modify(json);
                 try {
                     await stationsModel.findOneAndUpdate(
-                        { id: json.id },
+                        {
+                            id: json.id,
+                            updated_at: { $ne: json.updated_at }
+                        },
                         json,
                         {
                             upsert: true,
@@ -86,11 +85,7 @@ function Stations() {
                 });
             })
             .on('json', async json => {
-                json.import_commodities = objectify(json.import_commodities);
-                json.export_commodities = objectify(json.export_commodities);
-                json.prohibited_commodities = objectify(json.prohibited_commodities);
-                json.economies = objectify(json.economies);
-                json.selling_ships = objectify(json.selling_ships);
+                json = modify(json);
                 try {
                     let document = new stationsModel(json);
                     await document.save()
@@ -142,12 +137,7 @@ function Stations() {
                 });
             })
             .on('json', async json => {
-                json.states = statify(json.states);
-                json.import_commodities = objectify(json.import_commodities);
-                json.export_commodities = objectify(json.export_commodities);
-                json.prohibited_commodities = objectify(json.prohibited_commodities);
-                json.economies = objectify(json.economies);
-                json.selling_ships = objectify(json.selling_ships);
+                json = modify(json);
                 try {
                     await stationsModel.findOneAndUpdate(
                         {
@@ -173,29 +163,15 @@ function Stations() {
             })
     }
 
-    let objectify = ref => {
-        let entities = ref;
-        ref = [];
-        entities.forEach((entity, index, allEntities) => {
-            ref.push({
-                name: entity,
-                name_lower: entity.toLowerCase()
-            });
-        }, this);
-        return ref;
-    }
-
-    let statify = ref => {
-        let entities = ref;
-        ref = [];
-        entities.forEach((entity, index, allEntities) => {
-            ref.push({
-                id: entity.id,
-                name: entity.name,
-                name_lower: entity.name.toLowerCase()
-            });
-        }, this);
-        return ref;
+    let modify = json => {
+        let objectify = utilities.modify.objectify;
+        json.states = utilities.modify.statify(json.states);
+        json.import_commodities = objectify(json.import_commodities);
+        json.export_commodities = objectify(json.export_commodities);
+        json.prohibited_commodities = objectify(json.prohibited_commodities);
+        json.economies = objectify(json.economies);
+        json.selling_ships = objectify(json.selling_ships);
+        return json;
     }
 }
 

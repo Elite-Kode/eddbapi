@@ -46,7 +46,10 @@ function Factions() {
             .on('json', async json => {
                 try {
                     await factionsModel.findOneAndUpdate(
-                        { id: json.id },
+                        {
+                            id: json.id,
+                            updated_at: { $ne: json.updated_at }
+                        },
                         json,
                         {
                             upsert: true,

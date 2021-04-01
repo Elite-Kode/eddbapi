@@ -41,10 +41,66 @@ function Trigger() {
             });
         }
 
+        let bodiesDownload = () => {
+            return new Promise((resolve, reject) => {
+                let bodies = new eddb.bodies();
+                bodies.download();
+                bodies
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let bodiesUpdate = () => {
+            return new Promise((resolve, reject) => {
+                let bodies = new eddb.bodies();
+                bodies.update();
+                bodies
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
         let commoditiesDownloadUpdate = () => {
             return new Promise((resolve, reject) => {
                 let commodities = new eddb.commodities();
                 commodities.downloadUpdate();
+                commodities
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let commoditiesDownload = () => {
+            return new Promise((resolve, reject) => {
+                let commodities = new eddb.commodities();
+                commodities.download();
+                commodities
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let commoditiesUpdate = () => {
+            return new Promise((resolve, reject) => {
+                let commodities = new eddb.commodities();
+                commodities.update();
                 commodities
                     .on('done', () => {
                         resolve();
@@ -69,10 +125,66 @@ function Trigger() {
             });
         }
 
+        let factionsDownload = () => {
+            return new Promise((resolve, reject) => {
+                let factions = new eddb.factions();
+                factions.download();
+                factions
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let factionsUpdate = () => {
+            return new Promise((resolve, reject) => {
+                let factions = new eddb.factions();
+                factions.update();
+                factions
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
         let stationsDownloadUpdate = () => {
             return new Promise((resolve, reject) => {
                 let stations = new eddb.stations();
                 stations.downloadUpdate();
+                stations
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let stationsDownload = () => {
+            return new Promise((resolve, reject) => {
+                let stations = new eddb.stations();
+                stations.download();
+                stations
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let stationsUpdate = () => {
+            return new Promise((resolve, reject) => {
+                let stations = new eddb.stations();
+                stations.update();
                 stations
                     .on('done', () => {
                         resolve();
@@ -97,6 +209,34 @@ function Trigger() {
             });
         }
 
+        let populatedSystemsDownload = () => {
+            return new Promise((resolve, reject) => {
+                let populatedSystems = new eddb.populatedSystems();
+                populatedSystems.download();
+                populatedSystems
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let populatedSystemsUpdate = () => {
+            return new Promise((resolve, reject) => {
+                let populatedSystems = new eddb.populatedSystems();
+                populatedSystems.update();
+                populatedSystems
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
         let systemsDownloadUpdate = () => {
             return new Promise((resolve, reject) => {
                 let systems = new eddb.systems();
@@ -111,13 +251,53 @@ function Trigger() {
             });
         }
 
+        let systemsDownload = () => {
+            return new Promise((resolve, reject) => {
+                let systems = new eddb.systems();
+                systems.download();
+                systems
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
+        let systemsUpdate = () => {
+            return new Promise((resolve, reject) => {
+                let systems = new eddb.systems();
+                systems.update();
+                systems
+                    .on('done', () => {
+                        resolve();
+                    })
+                    .on('error', err => {
+                        reject(err);
+                    });
+            });
+        }
+
         try {
             // await bodiesDownloadUpdate();
-            await commoditiesDownloadUpdate();
-            await factionsDownloadUpdate();
-            await stationsDownloadUpdate();
-            await populatedSystemsDownloadUpdate();
-            await systemsDownloadUpdate();
+            // await commoditiesDownloadUpdate();
+            // await factionsDownloadUpdate();
+            // await stationsDownloadUpdate();
+            // await populatedSystemsDownloadUpdate();
+            // await systemsDownloadUpdate();
+            await Promise.all([
+                commoditiesDownload(),
+                factionsDownload(),
+                stationsDownload(),
+                populatedSystemsDownload(),
+                systemsDownload()
+            ]);
+            commoditiesUpdate();
+            factionsUpdate();
+            stationsUpdate();
+            populatedSystemsUpdate();
+            systemsUpdate();
         } catch (err) {
             console.log(err)
         }
