@@ -34,7 +34,8 @@ function Factions() {
 
     this.update = function () {
         let recordsUpdated = 0;
-        new utilities.jsonParse(pathToFile)
+        let stream = utilities.jsonParse(pathToFile);
+        stream
             .on('start', () => {
                 console.log(`EDDB faction dump update reported`);
                 this.emit('started', {
@@ -43,7 +44,8 @@ function Factions() {
                     type: 'faction'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 try {
                     await factionsModel.findOneAndUpdate(
                         {
@@ -58,6 +60,8 @@ function Factions() {
                     recordsUpdated++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {

@@ -26,21 +26,16 @@ module.exports = JsonlToJson;
 function JsonlToJson(path) {
     eventEmmiter.call(this);
     let firstData = true;
-    fs.createReadStream(path)
-        .pipe(ndjson.parse())
-        .on('data', json => {
-            if (firstData) {
-                firstData = !firstData;
-                this.emit('start');
-            }
-            this.emit('json', json);
-        })
-        .on('end', () => {
-            this.emit('end');
-        })
-        .on('error', error => {
-            this.emit('error', error);
-        })
+    let stream = fs.createReadStream(path)
+        .pipe(ndjson.parse());
+    stream.on('data', () => {
+        if (firstData) {
+            firstData = false;
+            stream.emit('start');
+        }
+    });
+
+    return stream;
 }
 
 inherits(JsonlToJson, eventEmmiter);

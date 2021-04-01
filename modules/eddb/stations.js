@@ -34,7 +34,8 @@ function Stations() {
 
     this.update = function () {
         let recordsUpdated = 0;
-        new utilities.jsonParse(pathToFile)
+        let stream = utilities.jsonParse(pathToFile);
+        stream
             .on('start', () => {
                 console.log(`EDDB station dump update reported`);
                 this.emit('started', {
@@ -43,7 +44,8 @@ function Stations() {
                     type: 'station'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 json = modify(json);
                 try {
                     await stationsModel.findOneAndUpdate(
@@ -59,6 +61,8 @@ function Stations() {
                     recordsUpdated++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {
