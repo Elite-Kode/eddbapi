@@ -25,21 +25,18 @@ module.exports = Download;
 
 function Download(pathFrom, pathTo) {
     eventEmmiter.call(this);
-    got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
-        .on('response', response => {
-            response.statusCode = 200;
-            this.emit('start', response);
-        })
-        .on('error', err => {
-            this.emit('error', err);
-        })
-        .pipe(fs.createWriteStream(pathTo)
-            .on('finish', () => {
-                this.emit('end');
-            })
-            .on('error', err => {
-                this.emit('error', err);
-            }));
+    let stream = got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true });
+    let pipedStream = stream.pipe(fs.createWriteStream(pathTo));
+    stream.on('response', response => {
+        response.statusCode = 200;
+        pipedStream.emit('start', response);
+    }).on('error', err => {
+        pipedStream.emit('error', err);
+    });
+    pipedStream.on('finish', () => {
+        pipedStream.emit('end');
+    });
+    return pipedStream;
 }
 
 inherits(Download, eventEmmiter);

@@ -293,11 +293,11 @@ function Trigger() {
                 populatedSystemsDownload(),
                 systemsDownload()
             ]);
-            commoditiesUpdate();
-            factionsUpdate();
-            stationsUpdate();
-            populatedSystemsUpdate();
-            systemsUpdate();
+            commoditiesUpdate().catch(err => console.log(err));
+            factionsUpdate().catch(err => console.log(err));
+            stationsUpdate().catch(err => console.log(err));
+            populatedSystemsUpdate().catch(err => console.log(err));
+            systemsUpdate().catch(err => console.log(err));
         } catch (err) {
             console.log(err)
         }

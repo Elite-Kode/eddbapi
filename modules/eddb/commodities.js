@@ -75,7 +75,8 @@ function Commodities() {
 
     this.import = function () {
         let recordsInserted = 0;
-        new utilities.csvToJson(pathToFile)
+        let stream = utilities.csvToJson(pathToFile);
+        stream
             .on('start', () => {
                 console.log(`EDDB commodity dump insertion reported`);
                 this.emit('started', {
@@ -84,13 +85,16 @@ function Commodities() {
                     type: 'commodity'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 try {
                     let document = new commoditiesModel(json);
                     await document.save()
                     recordsInserted++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {
@@ -106,7 +110,7 @@ function Commodities() {
     };
 
     this.download = function () {
-        new utilities.download('https://eddb.io/archive/v6/listings.csv', pathToFile)
+        utilities.download('https://eddb.io/archive/v6/listings.csv', pathToFile)
             .on('start', response => {
                 console.log(`EDDB commodity dump reported with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -126,7 +130,8 @@ function Commodities() {
 
     this.downloadUpdate = function () {
         let recordsUpdated = 0;
-        new utilities.downloadUpdate('https://eddb.io/archive/v6/listings.csv', 'csv')
+        let stream = utilities.downloadUpdate('https://eddb.io/archive/v6/listings.csv', 'csv');
+        stream
             .on('start', response => {
                 console.log(`EDDB commodity dump started with status code ${response.statusCode}`);
                 this.emit('started', {
@@ -135,7 +140,8 @@ function Commodities() {
                     type: 'commodity'
                 });
             })
-            .on('json', async json => {
+            .on('data', async json => {
+                stream.pause();
                 try {
                     await commoditiesModel.findOneAndUpdate(
                         {
@@ -149,6 +155,8 @@ function Commodities() {
                     recordsUpdated++;
                 } catch (err) {
                     this.emit('error', err);
+                } finally {
+                    stream.resume();
                 }
             })
             .on('end', () => {

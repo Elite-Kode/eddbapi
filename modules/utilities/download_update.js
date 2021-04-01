@@ -27,68 +27,47 @@ module.exports = DownloadUpdate;
 
 function DownloadUpdate(pathFrom, type) {
     eventEmmiter.call(this);
+    let stream;
+    let pipedStream;
     if (type === 'jsonl') {
-        got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
-            .on('response', response => {
-                response.statusCode = 200;
-                this.emit('start', response);
-            })
-            .on('error', error => {
-                this.emit('error', error);
-            })
-            .pipe(ndjson.parse())
-            .on('data', json => {
-                this.emit('json', json);
-            })
-            .on('end', () => {
-                this.emit('end');
-            })
-            .on('error', error => {
-                this.emit('error', error);
-            });
+        stream = got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true });
+        pipedStream = stream.pipe(ndjson.parse());
+        stream.on('response', response => {
+            response.statusCode = 200;
+            pipedStream.emit('start', response);
+        }).on('error', error => {
+            pipedStream.emit('error', error);
+        });
+        return pipedStream;
     } else if (type === 'json') {
-        got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
-            .on('response', response => {
-                response.statusCode = 200;
-                this.emit('start', response);
-            })
-            .on('error', error => {
-                this.emit('error', error);
-            })
-            .pipe(jsonStream.parse('*'))
-            .on('data', json => {
-                this.emit('json', json);
-            })
-            .on('end', () => {
-                this.emit('end');
-            })
-            .on('error', error => {
-                this.emit('error', error);
-            });
+        stream = got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true });
+        pipedStream = stream.pipe(jsonStream.parse('*'));
+        stream.on('response', response => {
+            response.statusCode = 200;
+            pipedStream.emit('start', response);
+        }).on('error', error => {
+            pipedStream.emit('error', error);
+        });
+        return pipedStream;
     } else if (type === 'csv') {
-        got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true })
-            .on('response', response => {
-                response.statusCode = 200;
-                this.emit('start', response);
-            })
-            .on('error', error => {
-                this.emit('error', error);
-            })
-            .pipe(csvtojson())
-            .on('data', json => {
-                this.emit('json', json);
-            })
-            .on('done', (error) => {
-                if (error) {
-                    this.emit('error', error);
-                } else {
-                    this.emit('end');
-                }
-            })
-            .on('error', error => {
-                this.emit('error', error);
-            });
+        stream = got.stream(pathFrom, { headers: { 'Accept-Encoding': 'gzip, deflate, sdch' }, gzip: true });
+        pipedStream = stream.pipe(csvtojson(null, { objectMode: true }))
+        stream.on('response', response => {
+            response.statusCode = 200;
+            pipedStream.emit('start', response);
+        }).on('error', error => {
+            pipedStream.emit('error', error);
+        })
+        pipedStream.on('done', (error) => {
+            if (error) {
+                pipedStream.emit('error', error);
+            } else {
+                pipedStream.emit('end');
+            }
+        });
+        return pipedStream;
     }
+    return null;
 }
 
 inherits(DownloadUpdate, eventEmmiter);

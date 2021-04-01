@@ -26,17 +26,18 @@ module.exports = JsonParse;
 function JsonParse(path) {
     eventEmmiter.call(this);
     let firstData = true;
-    let stream = fs.createReadStream(path)
-        .pipe(jsonStream.parse('*'));
-
-    stream.on('data', () => {
+    let stream = fs.createReadStream(path);
+    let pipedStream = stream.pipe(jsonStream.parse('*'));
+    stream.on('error', err => {
+        pipedStream.emit('error', err);
+    });
+    pipedStream.on('data', () => {
         if (firstData) {
             firstData = false;
-            stream.emit('start');
+            pipedStream.emit('start');
         }
     });
-
-    return stream;
+    return pipedStream;
 }
 
 inherits(JsonParse, eventEmmiter);
