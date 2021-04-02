@@ -73,7 +73,7 @@ router.get('/', async (req, res, next) => {
     try {
         let factions = require('../../models/factions');
         let query = {};
-        let systemSearch = null;
+        let systemSearch;
         let page = 1;
 
         if (req.query.eddbid) {
@@ -132,8 +132,8 @@ router.get('/', async (req, res, next) => {
             res.status(200).json(result);
         }
 
-        if (systemSearch instanceof Promise) {
-            let ids = await systemSearch
+        if (systemSearch) {
+            let ids = await systemSearch();
             query.home_system_id = { $in: ids };
             factionSearch();
         } else {

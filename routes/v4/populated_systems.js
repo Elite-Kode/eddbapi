@@ -100,7 +100,7 @@ router.get('/', async (req, res, next) => {
     try {
         let populatedSystems = require('../../models/populated_systems');
         let query = {};
-        let factionSearch = null;
+        let factionSearch;
         let page = 1;
 
         if (req.query.eddbid) {
@@ -185,8 +185,8 @@ router.get('/', async (req, res, next) => {
             res.status(200).json(result);
         }
 
-        if (factionSearch instanceof Promise) {
-            let ids = await factionSearch;
+        if (factionSearch) {
+            let ids = await factionSearch();
             query["minor_faction_presences.minor_faction_id"] = { $in: ids };
             systemSearch();
         } else {

@@ -137,8 +137,8 @@ router.get('/', async (req, res, next) => {
     try {
         let stations = require('../../models/stations')
         let query = {};
-        let factionSearch = null;
-        let systemSearch = null;
+        let factionSearch;
+        let systemSearch;
         let page = 1;
 
         if (req.query.eddbid) {
@@ -308,8 +308,8 @@ router.get('/', async (req, res, next) => {
             res.status(200).json(result);
         }
 
-        if ((factionSearch instanceof Promise) && (systemSearch instanceof Promise)) {
-            let results = await Promise.allSettled([factionSearch, systemSearch]);
+        if (factionSearch && systemSearch) {
+            let results = await Promise.allSettled([factionSearch(), systemSearch()]);
             if (results[0].status === 'fulfilled') {
                 query.controlling_minor_faction_id = { $in: results[0].value };
             } else {
@@ -321,12 +321,12 @@ router.get('/', async (req, res, next) => {
                 console.log(results[1].reason);
             }
             stationSearch();
-        } else if (factionSearch instanceof Promise) {
-            let ids = await factionSearch
+        } else if (factionSearch) {
+            let ids = await factionSearch();
             query.controlling_minor_faction_id = { $in: ids };
             stationSearch();
-        } else if (systemSearch instanceof Promise) {
-            let ids = await systemSearch
+        } else if (systemSearch) {
+            let ids = await systemSearch();
             query.system_id = { $in: ids };
             stationSearch();
         } else {
