@@ -128,12 +128,24 @@ function Commodities() {
             })
     };
 
+    const bulkUpdateCallback = function(err, result){
+         if (err) {
+             console.log(`Errors: ${err.result.getWriteErrorCount()}, example: ${err.message}`);
+             result = err.result;
+          }
+          if (result) {
+             console.log(`${result.insertedCount} inserted, ${result.matchedCount} matched, ${result.modifiedCount} modified, ${result.upsertedCount} upserted`);
+          }
+    }
+
     this.downloadUpdate = function () {
-        let recordsUpdated = 0;
+        let recordsFound = 0;
+        let operations = [];
         let stream = utilities.downloadUpdate('https://eddb.io/archive/v6/listings.csv', 'csv');
         stream
             .on('start', response => {
                 console.log(`EDDB commodity dump started with status code ${response.statusCode}`);
+                console.time('commodity');
                 this.emit('started', {
                     response: response,
                     insertion: "started",
@@ -142,26 +154,41 @@ function Commodities() {
             })
             .on('data', async json => {
                 stream.pause();
-                try {
-                    await commoditiesModel.findOneAndUpdate(
-                        {
-                            id: json.id
-                        },
-                        json,
-                        {
-                            upsert: true,
-                            runValidators: true
-                        });
-                    recordsUpdated++;
-                } catch (err) {
+                json.updated_at = json.updated_at * 1000;
+                operations.push({
+                                  updateOne: {
+                                    filter: {
+                                      id: json.id,
+//                                      updated_at: { $ne: json.updated_at }
+                                    },
+                                    update: { $set: json },
+                                    upsert: true
+                                  }
+                                });
+                recordsFound++;
+                if (operations.length % 5000 === 0 ) {
+                  try {
+                       await commoditiesModel.bulkWrite(
+                         operations,
+                         { ordered: false },
+                         bulkUpdateCallback
+                       );
+                  } catch (err) {
                     this.emit('error', err);
-                } finally {
-                    stream.resume();
+                  }
+                    operations = [];
                 }
+                stream.resume();
             })
             .on('end', () => {
-                console.log(`${recordsUpdated} records updated`);
-                this.emit('done', recordsUpdated);
+                commoditiesModel.bulkWrite(
+                  operations,
+                  { ordered: false },
+                  bulkUpdateCallback
+                );
+                console.timeEnd('commodity');
+                console.log(`${recordsFound} records processed.`);
+                this.emit('done', recordsFound);
             })
             .on('error', err => {
                 this.emit('error', err);

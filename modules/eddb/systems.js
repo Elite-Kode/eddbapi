@@ -131,12 +131,24 @@ function Systems() {
             })
     }
 
+    const bulkUpdateCallback = function(err, result){
+          if (err) {
+             console.log(`Errors: ${err.result.getWriteErrorCount()}, example: ${err.message}`);
+             result = err.result;
+          }
+          if (result) {
+             console.log(`${result.insertedCount} inserted, ${result.matchedCount} matched, ${result.modifiedCount} modified, ${result.upsertedCount} upserted`);
+          }
+    }
+
     this.downloadUpdate = function () {
-        let recordsUpdated = 0;
+        let recordsFound = 0;
+        let operations = [];
         let stream = utilities.downloadUpdate('https://eddb.io/archive/v6/systems.csv', 'csv');
         stream
             .on('start', response => {
                 console.log(`EDDB system dump started with status code ${response.statusCode}`);
+                console.time('systems')
                 this.emit('started', {
                     response: response,
                     insertion: "started",
@@ -145,27 +157,41 @@ function Systems() {
             })
             .on('data', async json => {
                 stream.pause();
-                try {
-                    await systemsModel.findOneAndUpdate(
-                        {
-                            id: json.id,
-                            updated_at: { $ne: json.updated_at }
-                        },
-                        json,
-                        {
-                            upsert: true,
-                            runValidators: true
-                        });
-                    recordsUpdated++;
-                } catch (err) {
+                json.updated_at = json.updated_at * 1000;
+                operations.push({
+                                  updateOne: {
+                                    filter: {
+                                      id: json.id,
+//                                      updated_at: { $ne: json.updated_at }
+                                    },
+                                    update: { $set: json },
+                                    upsert: true
+                                  }
+                                });
+                recordsFound++;
+                if (operations.length % 10000 === 0 ) {
+                  try {
+                       await systemsModel.bulkWrite(
+                         operations,
+                         { ordered: false },
+                         bulkUpdateCallback
+                       );
+                  } catch (err) {
                     this.emit('error', err);
-                } finally {
-                    stream.resume();
+                  }
+                  operations = [];
                 }
+                stream.resume();
             })
             .on('end', () => {
-                console.log(`${recordsUpdated} records updated`);
-                this.emit('done', recordsUpdated);
+                systemsModel.bulkWrite(
+                  operations,
+                  { ordered: false },
+                  bulkUpdateCallback
+                );
+                console.timeEnd('faction');
+                console.log(`${recordsFound} records processed.`);
+                this.emit('done', recordsFound);
             })
             .on('error', err => {
                 this.emit('error', err);

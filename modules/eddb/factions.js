@@ -131,12 +131,24 @@ function Factions() {
             })
     };
 
+    const bulkUpdateCallback = function(err, result){
+          if (err) {
+             console.log(`Errors: ${err.result.getWriteErrorCount()}, example: ${err.message}`);
+             result = err.result;
+          }
+          if (result) {
+             console.log(`${result.insertedCount} inserted, ${result.matchedCount} matched, ${result.modifiedCount} modified, ${result.upsertedCount} upserted`);
+          }
+    }
+
     this.downloadUpdate = function () {
-        let recordsUpdated = 0;
+        let recordsFound = 0;
+        let operations = [];
         let stream = utilities.downloadUpdate('https://eddb.io/archive/v6/factions.json', 'json');
         stream
             .on('start', response => {
                 console.log(`EDDB faction dump started with status code ${response.statusCode}`);
+                console.time('faction')
                 this.emit('started', {
                     response: response,
                     insertion: "started",
@@ -145,32 +157,46 @@ function Factions() {
             })
             .on('data', async json => {
                 stream.pause();
-                try {
-                    await factionsModel.findOneAndUpdate(
-                        {
-                            id: json.id,
-                            updated_at: { $ne: json.updated_at }
-                        },
-                        json,
-                        {
-                            upsert: true,
-                            runValidators: true
-                        });
-                    recordsUpdated++;
-                } catch (err) {
+                json.updated_at = json.updated_at * 1000;
+                json.name_lower = json.name.toLowerCase();
+                operations.push({
+                                  updateOne: {
+                                    filter: {
+                                      id: json.id,
+//                                      updated_at: { $ne: json.updated_at }
+                                    },
+                                    update: { $set: json },
+                                    upsert: true
+                                  }
+                                });
+                recordsFound++;
+                if (operations.length % 1000 === 0 ) {
+                  try {
+                       await factionsModel.bulkWrite(
+                         operations,
+                         { ordered: false },
+                         bulkUpdateCallback
+                       );
+                  } catch (err) {
                     this.emit('error', err);
-                } finally {
-                    stream.resume();
+                  }
+                  operations = [];
                 }
+                stream.resume();
             })
             .on('end', () => {
-                console.log(`${recordsUpdated} records updated`);
-                this.emit('done', recordsUpdated);
+                factionsModel.bulkWrite(
+                  operations,
+                  { ordered: false },
+                  bulkUpdateCallback
+                );
+                console.timeEnd('faction');
+                console.log(`${recordsFound} records processed.`);
+                this.emit('done', recordsFound);
             })
             .on('error', err => {
                 this.emit('error', err);
             })
     }
 }
-
 inherits(Factions, eventEmmiter);
