@@ -193,6 +193,8 @@ function PopulatedSystems() {
                   bulkUpdateCallback
                 );
                 console.timeEnd('populatedSystems');
+                console.log(`${recordsFound} records processed.`);                                                                                                           
+                this.emit('done', recordsFound);                                                                                                                             
             })
             .on('error', err => {
                 this.emit('error', err);
