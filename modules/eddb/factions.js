@@ -180,8 +180,8 @@ function Factions() {
                   } catch (err) {
                     this.emit('error', err);
                   }
+                  operations = [];
                 }
-                operations = [];
                 stream.resume();
             })
             .on('end', () => {

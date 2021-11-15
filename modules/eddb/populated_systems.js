@@ -182,8 +182,8 @@ function PopulatedSystems() {
                   } catch (err) {
                     this.emit('error', err);
                   }
+                  operations = [];
                 }
-                operations = [];
                 stream.resume();
             })
             .on('end', () => {
