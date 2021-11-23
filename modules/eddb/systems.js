@@ -136,9 +136,9 @@ function Systems() {
              console.log(`Errors: ${err.result.getWriteErrorCount()}, example: ${err.message}`);
              result = err.result;
           }
-          if (result) {
-             console.log(`${result.insertedCount} inserted, ${result.matchedCount} matched, ${result.modifiedCount} modified, ${result.upsertedCount} upserted`);
-          }
+//          if (result) {
+//             console.log(`${result.insertedCount} inserted, ${result.matchedCount} matched, ${result.modifiedCount} modified, ${result.upsertedCount} upserted`);
+//          }
     }
 
     this.downloadUpdate = function () {
