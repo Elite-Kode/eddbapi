@@ -168,7 +168,7 @@ function Stations() {
                     json.outfitting_updated_at = utilities.modify.millisecondify(json.outfitting_updated_at);
                 }
                 if (json.market_updated_at) {
-                   json.market_updated_at = utilities.modify.millisecondify(json.outfitting_updated_at);
+                   json.market_updated_at = utilities.modify.millisecondify(json.market_updated_at);
                 }
                 operations.push({
                                   updateOne: {
