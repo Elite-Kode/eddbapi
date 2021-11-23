@@ -160,6 +160,16 @@ function Stations() {
             .on('data', async json => {
                 stream.pause();
                 json = modify(json);
+                json.updated_at = utilities.modify.millisecondify(json.updated_at);
+                if (json.shipyard_updated_at) {
+                    json.shipyard_updated_at = utilities.modify.millisecondify(json.shipyard_updated_at);
+                }
+                if (json.outfitting_updated_at) {
+                    json.outfitting_updated_at = utilities.modify.millisecondify(json.outfitting_updated_at);
+                }
+                if (json.market_updated_at) {
+                   json.market_updated_at = utilities.modify.millisecondify(json.outfitting_updated_at);
+                }
                 operations.push({
                                   updateOne: {
                                     filter: {
@@ -208,16 +218,6 @@ function Stations() {
         json.prohibited_commodities = objectify(json.prohibited_commodities);
         json.economies = objectify(json.economies);
         json.selling_ships = objectify(json.selling_ships);
-        json.updated_at = utilities.modify.millisecondify(json.updated_at);
-        if (json.shipyard_updated_at) {
-            json.shipyard_updated_at = utilities.modify.millisecondify(json.shipyard_updated_at);
-        }
-        if (json.outfitting_updated_at) {
-            json.outfitting_updated_at = utilities.modify.millisecondify(json.outfitting_updated_at);
-        }
-        if (json.market_updated_at) {
-            json.market_updated_at = utilities.modify.millisecondify(json.outfitting_updated_at);
-        }
         return json;
     }
 }

@@ -160,6 +160,8 @@ function PopulatedSystems() {
             .on('data', async json => {
                 stream.pause();
                 json = modify(json);
+                json.updated_at = utilities.modify.millisecondify(json.updated_at);
+                json.name_lower = utilities.modify.lowerify(json.name);
                 operations.push({
                                   updateOne: {
                                     filter: {
@@ -203,8 +205,6 @@ function PopulatedSystems() {
     let modify = json => {
         let statify = utilities.modify.statify;
         json.states = statify(json.states);
-        json.updated_at = utilities.modify.millisecondify(json.updated_at);
-        json.name_lower = utilities.modify.lowerify(json.name);
         json.minor_faction_presences.forEach((minor_faction_presence, index, minor_faction_presences) => {
             minor_faction_presences[index].active_states = statify(minor_faction_presence.active_states);
             minor_faction_presences[index].pending_states = statify(minor_faction_presence.pending_states);
