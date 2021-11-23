@@ -23,4 +23,14 @@ function statify(ref) {
     return ref;
 }
 
-module.exports = { objectify, statify }
+function millisecondify(ts) {
+    ts *= 1000;
+    return ts;
+}
+
+function lowerify(name) {
+    name = name.toLowerCase();
+    return name;
+}
+
+module.exports = { objectify, statify, millisecondify, lowerify }

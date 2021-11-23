@@ -154,7 +154,7 @@ function Commodities() {
             })
             .on('data', async json => {
                 stream.pause();
-                json.updated_at = json.updated_at * 1000;
+                json.updated_at = utilities.modify.millisecondify(json.updated_at)
                 operations.push({
                                   updateOne: {
                                     filter: {
@@ -166,7 +166,7 @@ function Commodities() {
                                   }
                                 });
                 recordsFound++;
-                if (operations.length % 5000 === 0 ) {
+                if (operations.length % 1000 === 0 ) {
                   try {
                        await commoditiesModel.bulkWrite(
                          operations,

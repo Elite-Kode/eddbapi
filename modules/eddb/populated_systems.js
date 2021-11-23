@@ -160,7 +160,8 @@ function PopulatedSystems() {
             .on('data', async json => {
                 stream.pause();
                 json = modify(json);
-                json.updated_at = json.updated_at * 1000;
+                json.updated_at = utilities.modify.millisecondify(json.updated_at)
+                json.name_lower = utilities.modify.lowerify(json.name)
                 operations.push({
                                   updateOne: {
                                     filter: {

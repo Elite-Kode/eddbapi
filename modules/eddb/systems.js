@@ -157,7 +157,8 @@ function Systems() {
             })
             .on('data', async json => {
                 stream.pause();
-                json.updated_at = json.updated_at * 1000;
+                json.updated_at = utilities.modify.millisecondify(json.updated_at)
+                json.name_lower = utilities.modify.millisecondify(json.name)
                 operations.push({
                                   updateOne: {
                                     filter: {
