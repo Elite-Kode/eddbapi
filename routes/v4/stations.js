@@ -58,11 +58,11 @@ let router = express.Router();
  *         in: query
  *         type: string
  *       - name: allegiancename
- *         description: Name of the allegiance.
+ *         description: Comma seperated names of names of the allegiances.
  *         in: query
  *         type: string
  *       - name: governmentname
- *         description: Name of the government type.
+ *         description: Comma seperated names of named of the government types.
  *         in: query
  *         type: string
  *       - name: minlandingpad
@@ -188,10 +188,12 @@ router.get('/', async (req, res, next) => {
             query['states.name_lower'] = { $in: states };
         }
         if (req.query.allegiancename) {
-            query.allegiance = req.query.allegiancename.toLowerCase();
+            let allegiances = arrayfy(req.query.allegiancename);
+            query.allegiance = { $in: allegiances };
         }
         if (req.query.governmentname) {
-            query.government = req.query.governmentname.toLowerCase();
+            let governments = arrayfy(req.query.governmentname);
+            query.government = { $in: governments };
         }
         if (req.query.minlandingpad) {
             switch (req.query.minlandingpad.toLowerCase()) {
