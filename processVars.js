@@ -20,7 +20,7 @@ if (process.env.NODE_ENV === 'development') {
     host = 'localhost:3000';
     protocol = 'http';
 } else if (process.env.NODE_ENV === 'production') {
-    host = 'eddbapi.kodeblox.com';
+    host = 'eddbapi.elitebgs.app';
     protocol = 'https';
 }
 
